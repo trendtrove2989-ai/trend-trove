@@ -1355,33 +1355,31 @@
     <!-- Navigation -->
     <nav class="sticky-nav py-4" id="navbar" :class="isAdmin ? 'mt-10' : ''" style="margin-top: 0;">
         <div class="container mx-auto px-4 flex justify-between items-center">
-        <a href="https://trend-trove.pages.dev" class="logo animate-pulse-slow flex items-center ml-0 hover:opacity-80 transition-opacity">
-            <span class="text-gold">T</span>rend<span class="text-gold">T</span>rove
-        </a>
+            <a href="https://trend-trove.pages.dev" class="logo animate-pulse-slow flex items-center ml-0 hover:opacity-80 transition-opacity text-white">
+                <span class="text-white">T</span>rend<span class="text-white">T</span>rove
+            </a>
             
             <div class="hidden md:flex space-x-8">
-                <a href="#" @click.prevent="showHomePage()" class="nav-link text-gray-900 hover-lift">Home</a>
-                <a href="#" @click.prevent="showAllProductsPage()" class="nav-link text-gray-900 hover-lift">All Products</a>
-                <a href="#" @click.prevent="showCollectionsPage()" class="nav-link text-gray-900 hover-lift">Collections</a>
+                <a href="#" @click.prevent="showHomePage()" class="nav-link text-white hover-lift">Home</a>
+                <a href="#" @click.prevent="showAllProductsPage()" class="nav-link text-white hover-lift">All Products</a>
+                <a href="#" @click.prevent="showCollectionsPage()" class="nav-link text-white hover-lift">Collections</a>
                 <template x-for="category in categories" :key="category.id">
-                    <a href="#" @click.prevent="showCategoryPage(category.id)" class="nav-link text-gray-900 hover-lift" x-text="category.name"></a>
+                    <a href="#" @click.prevent="showCategoryPage(category.id)" class="nav-link text-white hover-lift" x-text="category.name"></a>
                 </template>
-                <a href="#" @click.prevent="showAboutPage()" class="nav-link text-gray-900 hover-lift">About</a>
-                <a href="https://wa.me/message/TY5U3IM2LB6HJ1" class="nav-link text-gray-900 hover-lift">Contact</a>
+                <a href="#" @click.prevent="showAboutPage()" class="nav-link text-white hover-lift">About</a>
+                <a href="https://wa.me/message/TY5U3IM2LB6HJ1" class="nav-link text-white hover-lift">Contact</a>
             </div>
             
             <div class="flex items-center space-x-6">
-                <button class="text-gray-900 hover:text-gold transition-colors hover-lift">
+                <button class="text-white hover:text-gold transition-colors hover-lift">
                     <i class="fas fa-search"></i>
                 </button>
                 
-                <!-- User Authentication Section -->
                 <div class="relative" x-data="{ userDropdownOpen: false }">
-                    <button class="text-gray-900 hover:text-gold transition-colors hover-lift" @click="userDropdownOpen = !userDropdownOpen">
+                    <button class="text-white hover:text-gold transition-colors hover-lift" @click="userDropdownOpen = !userDropdownOpen">
                         <i class="fas fa-user"></i>
                     </button>
                     
-                    <!-- User Dropdown Menu -->
                     <div x-show="userDropdownOpen" @click.outside="userDropdownOpen = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
                         <template x-if="!isLoggedIn">
                             <div>
@@ -1413,55 +1411,13 @@
                     </div>
                 </div>
                 
-                <button class="text-gray-900 hover:text-gold transition-colors hover-lift relative" @click="cartOpen = true">
+                <button class="text-white hover:text-gold transition-colors hover-lift relative" @click="cartOpen = true">
                     <i class="fas fa-shopping-bag"></i>
                     <span x-show="cartCount > 0" x-text="cartCount" class="absolute -top-2 -right-2 bg-gold text-primary text-xs rounded-full w-5 h-5 flex items-center justify-center"></span>
                 </button>
-                <button class="md:hidden text-gray-900" @click="mobileMenuOpen = !mobileMenuOpen">
+                <button class="md:hidden text-white" @click="mobileMenuOpen = !mobileMenuOpen">
                     <i class="fas fa-bars"></i>
                 </button>
-            </div>
-        </div>
-        
-        <!-- Mobile Menu -->
-        <div x-show="mobileMenuOpen" class="md:hidden bg-white py-4 px-6 absolute w-full shadow-lg" style="top: 100%;">
-            <div class="flex flex-col space-y-4">
-                <a href="#" @click.prevent="showHomePage(); mobileMenuOpen = false" class="nav-link text-gray-900 py-2">Home</a>
-                <a href="#" @click.prevent="showAllProductsPage(); mobileMenuOpen = false" class="nav-link text-gray-900 py-2">All Products</a>
-                <template x-for="category in categories" :key="category.id">
-                    <a href="#" @click.prevent="showCategoryPage(category.id); mobileMenuOpen = false" class="nav-link text-gray-700 py-2" x-text="category.name"></a>
-                </template>
-                <a href="#" @click.prevent="showAboutPage(); mobileMenuOpen = false" class="nav-link text-gray-900 py-2">About</a>
-                <a href="#" @click.prevent="showContactPage(); mobileMenuOpen = false" class="nav-link text-gray-900 py-2">Contact</a>
-                
-                <!-- Mobile Authentication Options -->
-                <template x-if="!isLoggedIn">
-                    <div class="space-y-2">
-                        <button @click="openLoginModal(); mobileMenuOpen = false" class="nav-link text-gray-900 py-2 text-left w-full">Login</button>
-                        <button @click="openRegisterModal(); mobileMenuOpen = false" class="nav-link text-gray-900 py-2 text-left w-full">Register</button>
-                    </div>
-                </template>
-                <template x-if="isLoggedIn">
-                    <div class="space-y-2">
-                        <div class="px-2 py-2 text-gray-700 border-b">
-                            <i class="fas fa-user-circle mr-2"></i>
-                            <span x-text="currentUser.name"></span>
-                        </div>
-                        <button @click="showUserProfile(); mobileMenuOpen = false" class="nav-link text-gray-900 py-2 text-left w-full">My Profile</button>
-                        <button @click="showOrderHistory(); mobileMenuOpen = false" class="nav-link text-gray-900 py-2 text-left w-full">Order History</button>
-                        <button @click="userLogout(); mobileMenuOpen = false" class="nav-link text-gray-900 py-2 text-left w-full">Logout</button>
-                    </div>
-                </template>
-                
-                <template x-if="isAdmin">
-                    <div>
-                        <button @click="showAdminDashboard(); mobileMenuOpen = false" class="bg-gold text-primary px-4 py-2 rounded-md font-medium hover:bg-yellow-600 transition-colors w-full mb-2">Dashboard</button>
-                        <button @click="openAddCategoryModal(); mobileMenuOpen = false" class="bg-gold text-primary px-4 py-2 rounded-md font-medium hover:bg-yellow-600 transition-colors w-full mb-2">Manage Categories</button>
-                        <button @click="openAddProductModal(); mobileMenuOpen = false" class="bg-gold text-primary px-4 py-2 rounded-md font-medium hover:bg-yellow-600 transition-colors w-full mb-2">Add Product</button>
-                        <button @click="openAddSaleModal(); mobileMenuOpen = false" class="bg-gold text-primary px-4 py-2 rounded-md font-medium hover:bg-yellow-600 transition-colors w-full mb-2">Add Sale</button>
-                        <button @click="openChangeCredentialsModal(); mobileMenuOpen = false" class="bg-gold text-primary px-4 py-2 rounded-md font-medium hover:bg-yellow-600 transition-colors w-full">Change Credentials</button>
-                    </div>
-                </template>
             </div>
         </div>
     </nav>
