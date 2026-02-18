@@ -40,7 +40,21 @@
         z-index: 9999;
         pointer-events: none;
     }
-
+    .music-btn {
+        position: fixed;
+        bottom: 20px;
+        left: 20px; /* Using left so it doesn't overlap WhatsApp/Chat widgets usually on right */
+        z-index: 9999;
+        width: 40px;
+        height: 40px;
+        background: #d4af37; /* Gold */
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
     .shutter {
         position: absolute;
         top: 0;
@@ -1459,7 +1473,7 @@
         <section class="hero-height relative flex items-center justify-center overflow-hidden" style="height: 100vh; margin-top: -80px; padding-top: 80px;">
             <!-- Desktop Image (hidden on mobile) -->
             <div class="absolute inset-0 z-0 hidden md:block">
-                <img src="https://i.ibb.co/cKNk30Fj/laptop.png" alt="TrendTrove Premium Fashion" class="w-full h-full object-cover">
+                <img src="https://i.ibb.co/WNgpBQ9w/Untitled-574-x-328-px-4200-x-2400-px.png" alt="TrendTrove Premium Fashion" class="w-full h-full object-cover">
             </div>
             
             <!-- Mobile Image (hidden on desktop) -->
@@ -4555,7 +4569,7 @@
             function createSnowflake() {
                 const snowflake = document.createElement('div');
                 snowflake.classList.add('snowflake');
-                snowflake.innerHTML = '❄'; 
+                snowflake.innerHTML = ''; 
                 
                 snowflake.style.left = Math.random() * 100 + 'vw';
                 snowflake.style.animationDuration = Math.random() * 3 + 2 + 's'; // Slightly faster falling (2-5s)
@@ -4574,6 +4588,44 @@
             setInterval(createSnowflake, 50); 
         });
 
-    </script>    
+    </script> 
+
+    <div onclick="toggleMusic()" style="position: fixed; bottom: 20px; left: 20px; width: 50px; height: 50px; background: #d4af37; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.4); z-index: 2147483647;">
+        <i id="music-icon" class="fas fa-volume-mute text-white" style="font-size: 20px;"></i>
+    </div>
+
+    <audio id="bgMusic" loop>
+        <source src="bg-music.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <script>
+        const audio = document.getElementById('bgMusic');
+        const icon = document.getElementById('music-icon');
+        audio.volume = 0.4; // Initial volume at 40%
+
+        function toggleMusic() {
+            if (audio.paused) {
+                audio.play();
+                icon.className = "fas fa-volume-up text-white";
+            } else {
+                audio.pause();
+                icon.className = "fas fa-volume-mute text-white";
+            }
+        }
+
+        // BROWSER BYPASS: Sound starts on the first click anywhere on the page
+        // This is necessary because Cloudflare/Chrome/Safari block auto-audio.
+        document.addEventListener('click', function() {
+            if (audio.paused) {
+                audio.play().then(() => {
+                    icon.className = "fas fa-volume-up text-white";
+                }).catch(err => {
+                    console.log("Autoplay blocked, user must click the gold button manually.");
+                });
+            }
+        }, { once: true });
+    </script>
+
 </body>
 </html>
