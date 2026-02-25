@@ -3731,8 +3731,13 @@
                 },
                 
                 simulateLoading() {
-                    // 1. Initial Logic: Handle the Loading Bar (Optional, but good for UX)
                     const loadingBar = document.getElementById('loadingBar');
+                    const audio = document.getElementById('bgMusic');
+                    const icon = document.getElementById('music-icon');
+                    
+                    // Set volume to 20%
+                    if(audio) audio.volume = 0.2;
+                
                     loadingBar.style.display = 'block';
                     loadingBar.style.opacity = '1';
                     loadingBar.style.width = '0%';
@@ -3749,26 +3754,31 @@
                         }
                     }, 50);
                 
-                    // 2. New Logic: Handle the Opening Animation (Stage 3)
-                    // We wait 2000ms (2 seconds) to let the user see the logo/loader, then open.
+                    // AFTER LOADING (The logic to open the shutters)
                     setTimeout(() => {
                         const transitionOverlay = document.querySelector('.transition-overlay');
                         const loaderContainer = document.querySelector('.loader-container');
                 
-                        // Step A: Fade out the Newton's Cradle
                         if(loaderContainer) loaderContainer.classList.remove('active');
                 
-                        // Step B: Slide open the shutters
                         if(transitionOverlay) {
-                            transitionOverlay.classList.remove('active'); // Remove closed state
-                            transitionOverlay.classList.add('closing');   // Trigger opening animation logic from CSS
+                            transitionOverlay.classList.remove('active');
+                            transitionOverlay.classList.add('closing');
                             
-                            // Clean up classes after animation is done (0.8s matches your CSS)
+                            // --- SOUND START TRIGGER ---
+                            // This attempts to play as the site reveals itself
+                            if(audio) {
+                                audio.play().then(() => {
+                                    if(icon) icon.className = "fas fa-volume-up text-white";
+                                }).catch(err => console.log("Automatic play blocked by browser. Click anywhere to start sound."));
+                            }
+                            // ---------------------------
+                
                             setTimeout(() => {
                                 transitionOverlay.classList.remove('closing');
                             }, 800);
                         }
-                    }, 2000); // Change 2000 to however many milliseconds you want the load to last
+                    }, 2000); 
                 },
                 
                 initializeScrollEvents() {
@@ -4558,8 +4568,10 @@
     <script>
         const audio = document.getElementById('bgMusic');
         const icon = document.getElementById('music-icon');
-        audio.volume = 0.4; // Initial volume at 40%
-
+        
+        // Set volume to 20% (light background music)
+        audio.volume = 0.2; 
+    
         function toggleMusic() {
             if (audio.paused) {
                 audio.play();
@@ -4569,18 +4581,32 @@
                 icon.className = "fas fa-volume-mute text-white";
             }
         }
-
-        // BROWSER BYPASS: Sound starts on the first click anywhere on the page
-        // This is necessary because Cloudflare/Chrome/Safari block auto-audio.
-        document.addEventListener('click', function() {
+    
+        const startAudio = () => {
             if (audio.paused) {
                 audio.play().then(() => {
                     icon.className = "fas fa-volume-up text-white";
+                    // Once it starts, remove all "listener" events so they don't run again
+                    removeListeners();
                 }).catch(err => {
-                    console.log("Autoplay blocked, user must click the gold button manually.");
+                    console.log("Browser still blocking audio. Waiting for a physical click.");
                 });
             }
-        }, { once: true });
+        };
+    
+        // Helper to clean up events once music starts
+        function removeListeners() {
+            document.removeEventListener('click', startAudio);
+            document.removeEventListener('touchstart', startAudio);
+            document.removeEventListener('scroll', startAudio);
+            document.removeEventListener('mousemove', startAudio);
+        }
+    
+        // This covers almost every way a user "starts" using a site
+        document.addEventListener('click', startAudio);
+        document.addEventListener('touchstart', startAudio);
+        document.addEventListener('scroll', startAudio);
+        document.addEventListener('mousemove', startAudio, { once: true });
     </script>
 
 </body>
