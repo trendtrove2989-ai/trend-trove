@@ -3737,7 +3737,7 @@
                     
                     // Set volume to 20%
                     if(audio) audio.volume = 0.2;
-                
+
                     loadingBar.style.display = 'block';
                     loadingBar.style.opacity = '1';
                     loadingBar.style.width = '0%';
@@ -3753,34 +3753,34 @@
                             loadingBar.style.width = width + '%';
                         }
                     }, 50);
-                
-                    // AFTER LOADING (The logic to open the shutters)
+
+                    // AFTER LOADING FINISHES
                     setTimeout(() => {
                         const transitionOverlay = document.querySelector('.transition-overlay');
                         const loaderContainer = document.querySelector('.loader-container');
-                
+
                         if(loaderContainer) loaderContainer.classList.remove('active');
-                
+
                         if(transitionOverlay) {
                             transitionOverlay.classList.remove('active');
                             transitionOverlay.classList.add('closing');
                             
-                            // --- SOUND START TRIGGER ---
-                            // This attempts to play as the site reveals itself
-                            if(audio) {
+                            // --- AUTO-PLAY TRIGGER ---
+                            if(audio && audio.paused) {
                                 audio.play().then(() => {
                                     if(icon) icon.className = "fas fa-volume-up text-white";
-                                }).catch(err => console.log("Automatic play blocked by browser. Click anywhere to start sound."));
+                                }).catch(err => {
+                                    console.log("Autoplay blocked by browser. Music will start on user movement.");
+                                });
                             }
-                            // ---------------------------
-                
+                            // -------------------------
+
                             setTimeout(() => {
                                 transitionOverlay.classList.remove('closing');
                             }, 800);
                         }
                     }, 2000); 
-                },
-                
+                },                
                 initializeScrollEvents() {
                     // Navbar background on scroll
                     window.addEventListener('scroll', () => {
