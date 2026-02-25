@@ -4560,7 +4560,7 @@
         <i id="music-icon" class="fas fa-volume-mute text-white" style="font-size: 20px;"></i>
     </div>
 
-    <audio id="bgMusic" loop>
+    <audio id="bgMusic" loop autoplay>
         <source src="bg-music.mp3" type="audio/mpeg">
         Your browser does not support the audio element.
     </audio>
@@ -4569,9 +4569,9 @@
         const audio = document.getElementById('bgMusic');
         const icon = document.getElementById('music-icon');
         
-        // Set volume to 20% (light background music)
-        audio.volume = 0.2; 
-    
+        // Force volume to 10%
+        audio.volume = 0.1; 
+
         function toggleMusic() {
             if (audio.paused) {
                 audio.play();
@@ -4581,32 +4581,47 @@
                 icon.className = "fas fa-volume-mute text-white";
             }
         }
-    
+
+        // The function that actually tries to play the audio
         const startAudio = () => {
             if (audio.paused) {
-                audio.play().then(() => {
-                    icon.className = "fas fa-volume-up text-white";
-                    // Once it starts, remove all "listener" events so they don't run again
-                    removeListeners();
-                }).catch(err => {
-                    console.log("Browser still blocking audio. Waiting for a physical click.");
-                });
+                // Ensure volume is exactly 10% right before playing
+                audio.volume = 0.1; 
+                let playPromise = audio.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        icon.className = "fas fa-volume-up text-white";
+                        removeListeners();
+                    }).catch(err => {
+                        console.log("Autoplay strictly blocked. Waiting for interaction.");
+                    });
+                }
             }
         };
-    
+
         // Helper to clean up events once music starts
         function removeListeners() {
             document.removeEventListener('click', startAudio);
             document.removeEventListener('touchstart', startAudio);
             document.removeEventListener('scroll', startAudio);
             document.removeEventListener('mousemove', startAudio);
+            document.removeEventListener('keydown', startAudio);
         }
-    
-        // This covers almost every way a user "starts" using a site
+
+        // --- Aggressive Autoplay Attempt ---
+        // 1. Try immediately on script load
+        startAudio();
+        
+        // 2. Try when the window is fully loaded
+        window.addEventListener('load', startAudio);
+        
+        // 3. Fallback: Try on literally any interaction
         document.addEventListener('click', startAudio);
         document.addEventListener('touchstart', startAudio);
         document.addEventListener('scroll', startAudio);
         document.addEventListener('mousemove', startAudio, { once: true });
+        document.addEventListener('keydown', startAudio, { once: true });
     </script>
 
 </body>
