@@ -114,7 +114,45 @@
         height: 400px;
         object-fit: cover;
     }
-
+/* --- CUSTOM MOCKUP BUILDER STYLES --- */
+    .mockup-container { 
+        position: relative; 
+        width: 100%; 
+        max-width: 500px; 
+        margin: 0 auto; 
+        border-radius: 8px; 
+        overflow: hidden; 
+        background-color: #ffffff; /* Base color changes via JS */
+        transition: background-color 0.3s ease;
+    }
+    /* mix-blend-mode: multiply makes a WHITE shirt with a transparent background take on the container's background color! */
+    .mockup-base { 
+        width: 100%; 
+        display: block; 
+        mix-blend-mode: multiply; 
+        position: relative; 
+        z-index: 2; 
+        pointer-events: none; 
+    }
+    /* The constrained print area so designs don't bleed off the shirt */
+    .print-area {
+        position: absolute;
+        z-index: 3;
+        overflow: hidden;
+        border: 1px dashed rgba(212, 175, 55, 0.4); /* Subtle guide line */
+    }
+    .mockup-design { 
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        transform-origin: center;
+        /* Removed pointer-events:none so it can be targeted if needed */
+    }
+    /* Printing Positions - Defines the boundaries of the print area */
+    .print-pos-a4 { top: 25%; left: 30%; width: 40%; height: 45%; }
+    .print-pos-a3 { top: 20%; left: 20%; width: 60%; height: 55%; }
+    .print-pos-pocket { top: 28%; left: 62%; width: 15%; height: 15%; }
+    .print-pos-sleeve { top: 32%; left: 82%; width: 12%; height: 15%; }
     .loader-container {
         position: absolute;
         bottom: 80px;
@@ -268,7 +306,37 @@
             padding-top: 60px;
         }
     }
-
+/* --- CUSTOM MOCKUP BUILDER STYLES --- */
+    .mockup-container { 
+        position: relative; 
+        width: 100%; 
+        max-width: 500px; 
+        margin: 0 auto; 
+        border-radius: 8px; 
+        overflow: hidden; 
+        background-color: #ffffff; /* Base color changes via JS */
+        transition: background-color 0.3s ease;
+    }
+    /* mix-blend-mode: multiply allows the white shirt to take on the background color while keeping shadows! */
+    .mockup-base { 
+        width: 100%; 
+        display: block; 
+        mix-blend-mode: multiply; 
+        position: relative; 
+        z-index: 2; 
+        pointer-events: none; 
+    }
+    .mockup-design { 
+        position: absolute; 
+        z-index: 3; 
+        object-fit: contain; 
+        pointer-events: none; 
+    }
+    /* Printing Positions based on your reference image */
+    .print-pos-a4 { top: 25%; left: 30%; width: 40%; height: 45%; }
+    .print-pos-a3 { top: 20%; left: 20%; width: 60%; height: 55%; }
+    .print-pos-pocket { top: 28%; left: 58%; width: 12%; height: 15%; }
+    .print-pos-sleeve { top: 32%; left: 82%; width: 12%; height: 15%; }
     /* Rest of your existing CSS styles */
     .hero-height img {
          filter: brightness(100%);
@@ -477,11 +545,22 @@
         height: 80px;
     }
     
-    /* Add this new class for the scrolling state */
+    /* Replace your existing .sticky-nav.scrolled block with this */
     .sticky-nav.scrolled {
-        background: rgba(255, 255, 255, 0.95);
+        background: rgba(255, 255, 255, 0.95) !important;
         backdrop-filter: blur(10px);
         box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Add these two new blocks right below it */
+    /* Turns the text/icons black when the header becomes white */
+    .sticky-nav.scrolled .text-white {
+        color: var(--primary) !important; 
+    }
+
+    /* Ensures the gold hover effect still works on the black text/icons */
+    .sticky-nav.scrolled .text-white:hover {
+        color: var(--accent) !important;
     }
     
     .logo {
@@ -886,7 +965,26 @@
     .animate-pulse-slow {
         animation: pulse 3s infinite;
     }
+    /* Cart Notification Popup Style */
+    .cart-notification {
+        position: fixed;
+        bottom: 30px;
+        right: 20px;
+        background: #d4af37; /* Gold theme */
+        color: white;
+        padding: 15px 25px;
+        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        z-index: 9999;
+        transform: translateY(150%); /* Hide below screen */
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        display: flex;
+        align-items: center;
+    }
     
+    .cart-notification.active {
+        transform: translateY(0); /* Slide into view */
+    }
     .parallax-bg {
         background-attachment: fixed;
         background-position: center;
@@ -1426,15 +1524,13 @@
     <!-- Home Page -->
     <div x-show="currentPage === 'home'" class="page-container active">
         <!-- Hero Section -->
-        <section class="hero-height relative flex items-center justify-center overflow-hidden" style="height: 100vh; margin-top: -80px; padding-top: 80px;">
-            <!-- Desktop Image (hidden on mobile) -->
-            <div class="absolute inset-0 z-0 hidden md:block">
-                <img src="https://i.ibb.co/WNgpBQ9w/Untitled-574-x-328-px-4200-x-2400-px.png" alt="TrendTrove Premium Fashion" class="w-full h-full object-cover">
+        <section class="relative w-full h-[100vh] overflow-hidden -mt-[60px] min-[480px]:-mt-[70px] md:-mt-[80px]">
+            <div class="hidden md:block absolute inset-0 w-full h-full z-0">
+                <img src="https://i.ibb.co/WNgpBQ9w/Untitled-574-x-328-px-4200-x-2400-px.png" alt="TrendTrove Premium Fashion" class="w-full h-full object-cover object-center">
             </div>
             
-            <!-- Mobile Image (hidden on desktop) -->
-            <div class="absolute inset-0 z-0 md:hidden">
-                <img src="https://i.ibb.co/1ffxP63m/Untitled-574-x-328-px-4200-x-2400-px-1599-x-2400-px.png" alt="TrendTrove Premium Fashion" class="w-full h-full object-cover">
+            <div class="block md:hidden absolute inset-0 w-full h-full z-0">
+                <img src="https://i.ibb.co/1ffxP63m/Untitled-574-x-328-px-4200-x-2400-px-1599-x-2400-px.png" alt="TrendTrove Premium Fashion" class="w-full h-full object-cover object-top">
             </div>
         </section>
 
@@ -1446,40 +1542,39 @@
                     <p class="text-xl text-gray-600 max-w-2xl mx-auto">Discover our latest <strong>Winter Collection</strong>. From <strong>heavyweight fleece hoodies</strong> to <strong>luxury track suits</strong>, elevate your wardrobe with comfort.</p>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 stagger-animation">
-                    <!-- Product Cards -->
-                    <template x-for="product in products.slice(0, 8)" :key="product.id">
-                        <div class="product-card bg-white premium-shadow rounded-lg overflow-hidden hover-lift relative">
-                            <div class="h-80 overflow-hidden relative">
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-8 stagger-animation">
+                    <template x-for="product in featuredProducts" :key="product.id">
+                        <div class="product-card bg-white premium-shadow rounded-lg overflow-hidden hover-lift relative flex flex-col h-full">
+                            <div class="h-48 sm:h-80 overflow-hidden relative shrink-0">
                                 <img :src="product.frontImages[0]" :alt="product.name" class="w-full h-full object-cover product-image">
                                 
                                 <template x-if="product.salePrice">
-                                    <div class="absolute top-0 right-0 bg-red-600 text-white text-xs font-bold px-3 py-1 z-10" style="border-bottom-left-radius: 8px;">
+                                    <div class="absolute top-0 right-0 bg-red-600 text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 z-10" style="border-bottom-left-radius: 8px;">
                                         <span x-text="calculateDiscount(product) + '% OFF'"></span>
                                     </div>
                                 </template>
                             </div>
 
-                            <div class="p-6">
-                                <h3 class="text-xl font-semibold mb-1" x-text="product.name"></h3>
-                                <p class="text-gray-600 text-sm mb-3" x-text="product.description.substring(0, 60) + '...'"></p>
+                            <div class="p-3 sm:p-6 flex-1 flex flex-col">
+                                <h3 class="text-sm sm:text-xl font-semibold mb-1 truncate" x-text="product.name"></h3>
+                                <p class="text-gray-600 text-xs sm:text-sm mb-3 hidden sm:block" x-text="product.description.substring(0, 60) + '...'"></p>
                                 
-                                <div class="flex justify-between items-end">
+                                <div class="mt-auto flex flex-col sm:flex-row justify-between items-start sm:items-end gap-2">
                                     <div>
                                         <template x-if="product.salePrice">
                                             <div class="flex flex-col">
-                                                <span class="text-gray-400 text-sm line-through decoration-red-500" x-text="product.price"></span>
-                                                <span class="text-2xl font-bold text-gray-900" x-text="product.salePrice"></span>
+                                                <span class="text-gray-400 text-xs sm:text-sm line-through decoration-red-500" x-text="product.price"></span>
+                                                <span class="text-base sm:text-2xl font-bold text-gray-900" x-text="product.salePrice"></span>
                                             </div>
                                         </template>
                                         <template x-if="!product.salePrice">
-                                            <span class="text-2xl font-bold text-gray-900" x-text="product.price"></span>
+                                            <span class="text-base sm:text-2xl font-bold text-gray-900" x-text="product.price"></span>
                                         </template>
                                     </div>
-                                    <button @click="showProductDetail(product)" class="btn-premium text-sm px-4 py-2">View Details</button>
+                                    <button @click="showProductDetail(product)" class="btn-premium w-full sm:w-auto text-xs sm:text-sm px-3 py-2">View Details</button>
                                 </div>
 
-                                <div class="mt-3 text-sm">
+                                <div class="mt-3 text-xs sm:text-sm">
                                     <template x-if="product.stockStatus === 'out-of-stock'">
                                         <span class="text-red-500 font-medium">Out of Stock</span>
                                     </template>
@@ -1510,13 +1605,17 @@
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 stagger-animation">
-                    <template x-for="category in categories.slice(0, 2)" :key="category.id">
+                    <template x-for="category in featuredCategories" :key="category.id">
                         <div class="collection-card rounded-lg overflow-hidden hover-lift">
                             <img :src="category.image" :alt="category.name" class="collection-image">
                             <div class="collection-overlay">
                                 <h3 class="text-4xl font-bold mb-4" x-text="category.name + ' Collection'"></h3>
                                 <p class="text-xl mb-6 max-w-md text-center" x-text="category.description"></p>
-                                <button @click="showCategoryPage(category.id)" class="btn-premium">EXPLORE</button>
+                                <button 
+                                    @click="category.isPermanent ? showCustomCategory() : showCategoryPage(category.id)"
+                                    class="btn-premium" 
+                                    x-text="category.isPermanent ? 'GET STARTED' : 'EXPLORE'">
+                                </button>
                             </div>
                         </div>
                     </template>
@@ -1543,7 +1642,7 @@
                             </div>
                             <div>
                                 <h2 class="font-semibold">Mian Muhammad Farooq Azam</h2>
-                                <h5 class="font-bold">Founder</h5>
+                                <h5 class="font-bold">(Founder)</h5>
                             </div>
                         </div>
                         <p class="text-gray-600">"Assalam-o-Alaikum. My name is Mian Muhammad Farooq Azam, and I am the proud founder of this company. With a deep passion for quality, creativity, and customer satisfaction, I established this brand to bring innovation and elegance to the clothing industry. My goal is to create a company that not only provides premium apparel but also builds trust and long-term relationships with our customers."</p>
@@ -1557,7 +1656,7 @@
                             </div>
                             <div>
                                 <h2 class="font-semibold">Ahmad Farooq</h2>
-                                <h5 class="font-bold">Co-Founder</h5>
+                                <h5 class="font-bold">(CEO)</h5>
                             </div>
                         </div>
                         <p class="text-gray-600">"Assalam-o-Alaikum. My name is Ahmad Farooq, and I am currently pursuing my Bachelor’s degree in Artificial Intelligence at FAST-NU. As the Co-Founder, I am working alongside my father to expand and modernize our company. My focus is on integrating technology, design innovation, and digital growth strategies to help our brand reach new heights and connect with a global audience"</p>
@@ -1581,31 +1680,31 @@
                     </button>
                 </div>
                 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-8">
                     <template x-for="product in products" :key="product.id">
-                        <div class="product-card bg-white premium-shadow rounded-lg overflow-hidden hover-lift">
-                            <div class="h-80 overflow-hidden">
+                        <div class="product-card bg-white premium-shadow rounded-lg overflow-hidden hover-lift flex flex-col h-full">
+                            <div class="h-48 sm:h-80 overflow-hidden shrink-0">
                                 <img :src="product.frontImages[0]" :alt="product.name" class="w-full h-full object-cover product-image">
                             </div>
-                            <div class="p-6">
-                                <h3 class="text-xl font-semibold mb-1" x-text="product.name"></h3>
-                                <p class="text-gray-600 text-sm mb-3" x-text="product.description.substring(0, 60) + '...'"></p>
-                                <div class="flex justify-between items-center">
+                            <div class="p-3 sm:p-6 flex-1 flex flex-col">
+                                <h3 class="text-sm sm:text-xl font-semibold mb-1 truncate" x-text="product.name"></h3>
+                                <p class="text-gray-600 text-xs sm:text-sm mb-3 hidden sm:block" x-text="product.description.substring(0, 60) + '...'"></p>
+                                <div class="mt-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                                     <div>
                                         <template x-if="product.salePrice">
-                                            <div class="flex items-center">
-                                                <span class="text-2xl font-bold text-gold" x-text="'PKR ' + product.salePrice"></span>
-                                                <span class="original-price ml-2" x-text="'PKR ' + product.price"></span>
-                                                <span class="discount-badge" x-text="calculateDiscount(product) + '% OFF'"></span>
+                                            <div class="flex flex-wrap items-center gap-1">
+                                                <span class="text-base sm:text-2xl font-bold text-gold" x-text="'PKR ' + product.salePrice"></span>
+                                                <span class="original-price text-xs sm:text-sm ml-0 sm:ml-2" x-text="'PKR ' + product.price"></span>
+                                                <span class="discount-badge text-[10px] sm:text-xs" x-text="calculateDiscount(product) + '% OFF'"></span>
                                             </div>
                                         </template>
                                         <template x-if="!product.salePrice">
-                                            <span class="text-2xl font-bold text-gold" x-text="'PKR ' + product.price"></span>
+                                            <span class="text-base sm:text-2xl font-bold text-gold" x-text="'PKR ' + product.price"></span>
                                         </template>
                                     </div>
-                                    <button @click="showProductDetail(product)" class="btn-premium">View Details</button>
+                                    <button @click="showProductDetail(product)" class="btn-premium w-full sm:w-auto text-xs sm:text-sm py-2 px-3">View Details</button>
                                 </div>
-                                <div class="mt-3 text-sm">
+                                <div class="mt-3 text-xs sm:text-sm">
                                     <template x-if="product.stockStatus === 'out-of-stock'">
                                         <span class="text-red-500 font-medium">Out of Stock</span>
                                     </template>
@@ -1669,31 +1768,31 @@
                     <p class="text-xl text-gray-600" x-text="selectedCategory.description"></p>
                 </div>
                 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-8">
                     <template x-for="product in categoryProducts" :key="product.id">
-                        <div class="product-card bg-white premium-shadow rounded-lg overflow-hidden hover-lift">
-                            <div class="h-80 overflow-hidden">
+                        <div class="product-card bg-white premium-shadow rounded-lg overflow-hidden hover-lift flex flex-col h-full">
+                            <div class="h-48 sm:h-80 overflow-hidden shrink-0">
                                 <img :src="product.frontImages[0]" :alt="product.name" class="w-full h-full object-cover product-image">
                             </div>
-                            <div class="p-6">
-                                <h3 class="text-xl font-semibold mb-1" x-text="product.name"></h3>
-                                <p class="text-gray-600 text-sm mb-3" x-text="product.description.substring(0, 60) + '...'"></p>
-                                <div class="flex justify-between items-center">
+                            <div class="p-3 sm:p-6 flex-1 flex flex-col">
+                                <h3 class="text-sm sm:text-xl font-semibold mb-1 truncate" x-text="product.name"></h3>
+                                <p class="text-gray-600 text-xs sm:text-sm mb-3 hidden sm:block" x-text="product.description.substring(0, 60) + '...'"></p>
+                                <div class="mt-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                                     <div>
                                         <template x-if="product.salePrice">
-                                            <div class="flex items-center">
-                                                <span class="text-2xl font-bold text-gold" x-text="'PKR ' + product.salePrice"></span>
-                                                <span class="original-price ml-2" x-text="'PKR ' + product.price"></span>
-                                                <span class="discount-badge" x-text="calculateDiscount(product) + '% OFF'"></span>
+                                            <div class="flex flex-wrap items-center gap-1">
+                                                <span class="text-base sm:text-2xl font-bold text-gold" x-text="'PKR ' + product.salePrice"></span>
+                                                <span class="original-price text-xs sm:text-sm ml-0 sm:ml-2" x-text="'PKR ' + product.price"></span>
+                                                <span class="discount-badge text-[10px] sm:text-xs" x-text="calculateDiscount(product) + '% OFF'"></span>
                                             </div>
                                         </template>
                                         <template x-if="!product.salePrice">
-                                            <span class="text-2xl font-bold text-gold" x-text="'PKR ' + product.price"></span>
+                                            <span class="text-base sm:text-2xl font-bold text-gold" x-text="'PKR ' + product.price"></span>
                                         </template>
                                     </div>
-                                    <button @click="showProductDetail(product)" class="btn-premium">View Details</button>
+                                    <button @click="showProductDetail(product)" class="btn-premium w-full sm:w-auto text-xs sm:text-sm py-2 px-3">View Details</button>
                                 </div>
-                                <div class="mt-3 text-sm">
+                                <div class="mt-3 text-xs sm:text-sm">
                                     <template x-if="product.stockStatus === 'out-of-stock'">
                                         <span class="text-red-500 font-medium">Out of Stock</span>
                                     </template>
@@ -1724,97 +1823,163 @@
                 </button>
                 
                 <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-                    <div class="flex flex-col md:flex-row">
-                        <div class="md:w-1/2 p-6">
-                            <div class="mb-4 h-auto md:h-96 overflow-hidden rounded-lg bg-gray-50">
-                                <img 
-                                    :src="selectedProduct.detailImages ? selectedProduct.detailImages[selectedImageIndex] : ''" 
-                                    :alt="selectedProduct.name" 
-                                    class="w-full h-auto md:h-full md:object-cover"
-                                >
-                            </div>
-                            <div class="flex space-x-2 overflow-x-auto pb-2">
-                                <template x-if="selectedProduct.detailImages">
-                                    <template x-for="(image, index) in selectedProduct.detailImages" :key="index">
-                                        <button @click="selectedImageIndex = index" class="flex-shrink-0 w-20 h-20 border-2 rounded hover-lift" :class="selectedImageIndex === index ? 'border-gold premium-glow' : 'border-gray-200'">
-                                            <img :src="image" :alt="selectedProduct.name" class="w-full h-full object-cover">
-                                        </button>
-                                    </template>
-                                </template>
-                            </div>
-                        </div>
-                        
-                        <div class="md:w-1/2 p-6 bg-highlight">
-                            <h1 class="text-3xl font-bold mb-2" x-text="selectedProduct.name"></h1>
-                            <p class="text-gray-600 mb-4" x-text="selectedProduct.description"></p>
-                            
-                            <div class="mb-6">
-                                <template x-if="selectedProduct.salePrice">
-                                    <div class="flex flex-col items-start">
-                                        <span class="text-gray-500 text-lg line-through decoration-red-500 decoration-2 mb-1" x-text="selectedProduct.price"></span>
-                                        
-                                        <div class="flex items-center gap-3">
-                                            <span class="text-4xl font-bold text-gray-900" x-text="selectedProduct.salePrice"></span>
-                                            
-                                            <span class="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold shadow-sm" x-text="calculateDiscount(selectedProduct) + '% OFF'"></span>
-                                        </div>
-                                    </div>
-                                </template>
-                                <template x-if="!selectedProduct.salePrice">
-                                    <span class="text-4xl font-bold text-gray-900" x-text="selectedProduct.price"></span>
-                                </template>
-                            </div>
-                            
-                            <div class="mb-6">
-                                <h3 class="font-bold mb-2">Select Color</h3>
-                                <div class="flex flex-wrap gap-2 mb-4">
-                                    <template x-for="color in selectedProduct.colors" :key="color.code">
-                                        <button 
-                                            @click="selectColor(color)" 
-                                            class="w-10 h-10 rounded-full border-2 focus:outline-none transition-transform hover:scale-110"
-                                            :style="`background-color: ${color.code}`"
-                                            :class="selectedColor && selectedColor.code === color.code ? 'border-black scale-110 ring-2 ring-offset-2 ring-gray-400' : 'border-gray-300'"
-                                            :title="color.name"
-                                        ></button>
-                                    </template>
-                                </div>
-                                <p class="text-sm text-gray-600" x-text="selectedColor ? 'Selected Color: ' + selectedColor.name : 'Please select a color'"></p>
-                            </div>
-                            
-                            <div class="mb-6">
-                                <h3 class="font-bold mb-2">Select Size</h3>
-                                <div class="flex flex-wrap gap-2">
-                                    <template x-for="size in selectedProduct.sizes" :key="size">
-                                        <button 
-                                            @click="selectSize(size)" 
-                                            class="size-option"
-                                            :class="{
-                                                'active': selectedSize === size,
-                                                'opacity-50 cursor-not-allowed bg-gray-200': selectedColor && getStockForColorAndSize(selectedColor.code, size) == 0
-                                            }"
-                                            x-text="size"
-                                        ></button>
-                                    </template>
-                                </div>
-                                <p x-show="selectedColor && selectedSize && getStockForColorAndSize(selectedColor.code, selectedSize) == 0" class="text-red-500 text-sm mt-1">Out of Stock</p>
-                            </div>
-                            
-                            <div class="flex space-x-4">
-                                <button 
-                                    @click="addToCart(selectedProduct)" 
-                                    class="flex-1 bg-gray-800 text-white py-3 rounded-md font-medium transition-colors hover:bg-black hover-lift"
-                                >
-                                    Add to Cart
-                                </button>
-                                <button 
-                                    @click="buyNow(selectedProduct)" 
-                                    class="flex-1 btn-gold py-3 rounded-md font-medium shadow-md hover-lift premium-glow"
-                                >
-                                    Buy Now
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="flex flex-row">
+                        <div class="w-1/2 p-2 sm:p-4 md:p-6 overflow-hidden">
+                            <template x-if="!selectedProduct.isCustomizable">
+                                <div>
+                                    <div class="mb-2 md:mb-4 h-32 sm:h-48 md:h-96 overflow-hidden rounded-lg bg-gray-50 flex items-center justify-center">
+                                        <img :src="selectedProduct.detailImages ? selectedProduct.detailImages[selectedImageIndex] : selectedProduct.frontImages[0]" :alt="selectedProduct.name" class="w-full h-full object-contain md:object-cover">
+                                    </div>
+                                    <div class="flex space-x-2 overflow-x-auto pb-2">
+                                        <template x-if="selectedProduct.detailImages">
+                                            <template x-for="(image, index) in selectedProduct.detailImages" :key="index">
+                                                <button @click="selectedImageIndex = index" class="flex-shrink-0 w-12 h-12 md:w-20 md:h-20 border-2 rounded hover-lift" :class="selectedImageIndex === index ? 'border-gold premium-glow' : 'border-gray-200'">
+                                                    <img :src="image" :alt="selectedProduct.name" class="w-full h-full object-cover">
+                                                </button>
+                                            </template>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <template x-if="selectedProduct.isCustomizable">
+                                <div>
+                                    <div class="flex justify-center space-x-1 md:space-x-2 mb-2 md:mb-4">
+                                        <button @click="mockupView = 'front'" :class="mockupView === 'front' ? 'bg-gold text-white' : 'bg-white border border-gray-300'" class="px-2 md:px-4 py-1 rounded-full text-[10px] md:text-sm transition-colors shadow-sm">Front</button>
+                                        <button x-show="selectedProduct.detailImages && selectedProduct.detailImages.length > 0" @click="mockupView = 'back'" :class="mockupView === 'back' ? 'bg-gold text-white' : 'bg-white border border-gray-300'" class="px-2 md:px-4 py-1 rounded-full text-[10px] md:text-sm transition-colors shadow-sm">Back</button>
+                                    </div>
+
+                                    <div class="mockup-container border border-gray-200 shadow-inner" :style="`background-color: ${selectedColor ? selectedColor.code : '#ffffff'}`">
+                                        <img :src="mockupView === 'front' ? selectedProduct.frontImages[0] : selectedProduct.detailImages[0]" class="mockup-base w-full h-auto">
+                                        
+                                        <template x-if="customImage && selectedPrintOption">
+                                            <div class="print-area" :class="getPrintPositionClass()">
+                                                <img :src="customImage" class="mockup-design" :style="`transform: translate(${customOffsetX}%, ${customOffsetY}%) scale(${customScale});`">
+                                            </div>
+                                        </template>
+                                        
+                                        <div x-show="!customImage" class="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+                                            <span class="bg-black bg-opacity-50 text-white px-2 py-1 md:px-4 md:py-2 rounded-full text-[8px] md:text-sm text-center">Upload image</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                        
+                        <div class="w-1/2 p-2 sm:p-4 md:p-6 bg-highlight overflow-hidden">
+                            <h1 class="text-lg md:text-3xl font-bold mb-1 md:mb-2 leading-tight" x-text="selectedProduct.name"></h1>
+                            <p class="text-[10px] md:text-base text-gray-600 mb-2 md:mb-4 line-clamp-2 md:line-clamp-none" x-text="selectedProduct.description"></p>
+                            
+                            <div class="mb-2 md:mb-6">
+                                <template x-if="selectedProduct.salePrice">
+                                    <div class="flex flex-col items-start">
+                                        <span class="text-gray-500 text-[10px] md:text-lg line-through decoration-red-500 decoration-2 mb-1" x-text="selectedProduct.price"></span>
+                                        
+                                        <div class="flex items-center gap-1 md:gap-3 flex-wrap">
+                                            <span class="text-sm md:text-4xl font-bold text-gray-900 leading-none" x-text="selectedProduct.salePrice"></span>
+                                            
+                                            <span class="bg-red-600 text-white px-1.5 py-0.5 md:px-3 md:py-1 rounded-full text-[8px] md:text-sm font-bold shadow-sm" x-text="calculateDiscount(selectedProduct) + '% OFF'"></span>
+                                        </div>
+                                    </div>
+                                </template>
+                                <template x-if="!selectedProduct.salePrice">
+                                    <span class="text-sm md:text-4xl font-bold text-gray-900" x-text="selectedProduct.price"></span>
+                                </template>
+                            </div>
+                            
+                            <div class="mb-3 md:mb-6">
+                                <h3 class="font-bold text-[10px] md:text-base mb-1 md:mb-2">Color</h3>
+                                <div class="flex flex-wrap gap-1 md:gap-2 mb-1 md:mb-4">
+                                    <template x-for="color in selectedProduct.colors" :key="color.code">
+                                        <button 
+                                            @click="selectColor(color)" 
+                                            class="w-6 h-6 md:w-10 md:h-10 rounded-full border-2 focus:outline-none transition-transform hover:scale-110"
+                                            :style="`background-color: ${color.code}`"
+                                            :class="selectedColor && selectedColor.code === color.code ? 'border-black scale-110 ring-1 md:ring-2 ring-offset-1 md:ring-offset-2 ring-gray-400' : 'border-gray-300'"
+                                            :title="color.name"
+                                        ></button>
+                                    </template>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4 md:mb-6">
+                                <h3 class="font-bold text-[10px] md:text-base mb-1 md:mb-2">Size</h3>
+                                <div class="flex flex-wrap gap-1 md:gap-2">
+                                    <template x-for="size in selectedProduct.sizes" :key="size">
+                                        <button 
+                                            @click="selectSize(size)" 
+                                            class="size-option px-2 py-1 md:px-4 md:py-2 text-[10px] md:text-base"
+                                            :class="{
+                                                'active': selectedSize === size,
+                                                'opacity-50 cursor-not-allowed bg-gray-200': selectedColor && getStockForColorAndSize(selectedColor.code, size) == 0
+                                            }"
+                                            x-text="size"
+                                        ></button>
+                                    </template>
+                                </div>
+                                <p x-show="selectedColor && selectedSize && getStockForColorAndSize(selectedColor.code, selectedSize) == 0" class="text-red-500 text-[10px] md:text-sm mt-1">Out of Stock</p>
+                            </div>
+                            
+                            <template x-if="selectedProduct.isCustomizable">
+                                <div class="mb-4 md:mb-6 p-2 md:p-4 bg-gray-50 border border-gold rounded-lg shadow-sm">
+                                    <h3 class="font-bold text-[10px] md:text-base mb-2 md:mb-3 text-gold"><i class="fas fa-magic mr-1 md:mr-2"></i>Design</h3>
+                                    
+                                    <label class="block text-[9px] md:text-sm font-semibold mb-1 text-gray-700">1. Size & Place</label>
+                                    <div class="space-y-1 md:space-y-2 mb-2 md:mb-4">
+                                        <template x-for="(opt, key) in selectedProduct.printOptions" :key="key">
+                                            <template x-if="opt.active">
+                                                <label class="flex flex-col md:flex-row md:items-center justify-between cursor-pointer border bg-white p-1 md:p-3 rounded hover:border-gold transition-colors" :class="selectedPrintOption === key ? 'border-gold ring-1 ring-gold' : 'border-gray-200'">
+                                                    <div class="flex items-center space-x-1 md:space-x-2">
+                                                        <input type="radio" name="printSize" :value="key" x-model="selectedPrintOption" class="text-gold w-3 md:w-4">
+                                                        <span x-text="opt.label" class="font-medium text-[8px] md:text-sm"></span>
+                                                    </div>
+                                                    <span class="text-gold font-bold text-[8px] md:text-sm ml-4 md:ml-0" x-text="'+PKR ' + opt.price"></span>
+                                                </label>
+                                            </template>
+                                        </template>
+                                    </div>
+
+                                    <label class="block text-[9px] md:text-sm font-semibold mb-1 text-gray-700">2. Upload Logo</label>
+                                    <input type="file" @change="handleCustomImageUpload" accept="image/*" class="w-full text-[8px] md:text-sm text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-full file:border-0 file:text-[8px] md:file:text-sm file:font-semibold file:bg-gold file:text-primary hover:file:bg-yellow-600 cursor-pointer bg-white border border-gray-200 rounded p-1 mb-2 md:mb-4">
+
+                                    <div x-show="customImage" class="bg-white p-2 md:p-3 border border-gray-200 rounded-md">
+                                        <label class="block text-[9px] md:text-sm font-semibold mb-1 md:mb-2 text-gray-700">3. Adjust</label>
+                                        
+                                        <div class="mb-1 md:mb-2">
+                                            <div class="flex justify-between text-[7px] md:text-xs text-gray-500 mb-1"><span>Zoom</span> <span x-text="Math.round(customScale * 100) + '%'"></span></div>
+                                            <input type="range" min="0.2" max="2" step="0.05" x-model="customScale" class="w-full accent-gold h-1 md:h-auto">
+                                        </div>
+                                        
+                                        <div class="grid grid-cols-2 gap-2 md:gap-4">
+                                            <div>
+                                                <div class="flex justify-between text-[7px] md:text-xs text-gray-500 mb-1"><span>L/R</span></div>
+                                                <input type="range" min="-100" max="100" step="1" x-model="customOffsetX" class="w-full accent-gold h-1 md:h-auto">
+                                            </div>
+                                            <div>
+                                                <div class="flex justify-between text-[7px] md:text-xs text-gray-500 mb-1"><span>U/D</span></div>
+                                                <input type="range" min="-100" max="100" step="1" x-model="customOffsetY" class="w-full accent-gold h-1 md:h-auto">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            
+                            <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+                                <button 
+                                    @click="addToCart(selectedProduct)" 
+                                    class="w-full bg-gray-800 text-white py-2 md:py-3 rounded-md text-[10px] md:text-base font-medium transition-colors hover:bg-black hover-lift"
+                                >
+                                    Add to Cart
+                                </button>
+                                <button 
+                                    @click="buyNow(selectedProduct)" 
+                                    class="w-full btn-gold py-2 md:py-3 rounded-md text-[10px] md:text-base font-medium shadow-md hover-lift premium-glow"
+                                >
+                                    Buy Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     
                     <div class="p-6 border-t border-gray-200 bg-gray-50">
                         <h3 class="text-2xl font-bold mb-6">Customer Reviews</h3>
@@ -1915,6 +2080,7 @@
                                     <th>Category Name</th>
                                     <th>Description</th>
                                     <th>Products</th>
+                                    <th>Show on Home</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -1932,6 +2098,14 @@
                                         </td>
                                         <td>
                                             <span class="text-gold font-bold" x-text="getProductCountByCategory(category.id)"></span>
+                                        </td>
+                                        <td>
+                                            <button @click="toggleCategoryFeatured(category)"
+                                                    :class="category.featuredOnHome ? 'bg-green-100 text-green-800 border-green-300' : 'bg-gray-100 text-gray-500 border-gray-300'"
+                                                    class="px-3 py-1 border rounded-full text-xs font-bold transition-colors whitespace-nowrap">
+                                                <i class="fas" :class="category.featuredOnHome ? 'fa-star text-gold' : 'fa-star'"></i>
+                                                <span x-text="category.featuredOnHome ? 'Featured' : 'Make Featured'"></span>
+                                            </button>
                                         </td>
                                         <td>
                                             <div class="flex space-x-2">
@@ -1967,6 +2141,7 @@
                                     <th>Price</th>
                                     <th>Sale Price</th>
                                     <th>Status</th>
+                                    <th>Show on Home</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -2029,6 +2204,14 @@
                                                   }"
                                                   x-text="product.stockStatus === 'out-of-stock' ? 'Out of Stock' : product.stockStatus === 'low-stock' ? 'Low Stock' : 'In Stock'">
                                             </span>
+                                        </td>
+                                        <td>
+                                            <button @click="toggleProductFeatured(product)"
+                                                    :class="product.featuredOnHome ? 'bg-green-100 text-green-800 border-green-300' : 'bg-gray-100 text-gray-500 border-gray-300'"
+                                                    class="px-3 py-1 border rounded-full text-xs font-bold transition-colors whitespace-nowrap">
+                                                <i class="fas" :class="product.featuredOnHome ? 'fa-star text-gold' : 'fa-star'"></i>
+                                                <span x-text="product.featuredOnHome ? 'Featured' : 'Make Featured'"></span>
+                                            </button>
                                         </td>
                                         <td>
                                             <div class="flex space-x-2">
@@ -2627,7 +2810,29 @@
                         <button type="button" @click="addSize()" class="text-gold underline text-sm">+ Add Size</button>
                     </div>
                 </div>
-                
+                <div class="mb-6 p-4 border border-gold rounded-lg bg-yellow-50">
+                    <label class="flex items-center space-x-3 cursor-pointer font-bold text-gray-800 mb-4">
+                        <input type="checkbox" x-model="newProduct.isCustomizable" class="w-5 h-5 text-gold">
+                        <span>Is this a Customizable Product? (Allows users to upload images)</span>
+                    </label>
+                    
+                    <div x-show="newProduct.isCustomizable" class="space-y-3">
+                        <p class="text-sm text-gray-600 mb-2">Select available printing sizes and set their additional prices (PKR):</p>
+                        <template x-for="(opt, key) in newProduct.printOptions" :key="key">
+                            <div class="flex items-center space-x-4 bg-white p-2 rounded border">
+                                <label class="flex items-center space-x-2 w-1/3">
+                                    <input type="checkbox" x-model="opt.active" class="w-4 h-4">
+                                    <span x-text="opt.label" class="text-sm"></span>
+                                </label>
+                                <div class="flex items-center w-2/3" x-show="opt.active">
+                                    <span class="text-sm text-gray-500 mr-2">+ PKR</span>
+                                    <input type="number" x-model="opt.price" class="w-24 px-2 py-1 border rounded text-sm">
+                                </div>
+                            </div>
+                        </template>
+                        <p class="text-xs text-red-500 mt-2">*Note: Base product image should be a White shirt for the color-overlay mockup to work perfectly.</p>
+                    </div>
+                </div>
                 <div class="mb-6">
                     <label class="block text-gray-700 mb-2">Available Colors & Stock</label>
                     <div class="space-y-4">
@@ -3008,66 +3213,67 @@
                                 high-quality fabrics with cash on delivery across Lahore, Karachi, Islamabad, and all of Pakistan.
                             </p>
                         </div>
-</section>    
-    <!-- Footer -->
-    <footer class="py-12 bg-highlight">
-        <div class="container mx-auto px-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div>
-                    <div class="logo text-2xl mb-4">
-                        <span class="text-gold">T</span>rend<span class="text-gold">T</span>rove
+                    </section> 
+                </div>   
+                <!-- Footer -->
+                <footer class="py-12 bg-highlight">
+                    <div class="container mx-auto px-6">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                            <div>
+                                <div class="logo text-2xl mb-4">
+                                    <span class="text-gold">T</span>rend<span class="text-gold">T</span>rove
+                                </div>
+                                <p class="text-gray-600 mb-4">Premium fashion for the modern individual. Quality meets style in every piece.</p>
+                                <div class="flex space-x-4">
+                                    <a href="https://www.facebook.com/share/1KQP85v2Hx/" target="_blank" class="text-gray-600 hover:text-gold transition-colors hover-lift">
+                                        <i class="fab fa-facebook-f"></i>
+                                    </a>
+                                    <a href="https://www.instagram.com/trend__trove_offical?igsh=NmFkcXB4YjB5OXE=" target="_blank" class="text-gray-600 hover:text-gold transition-colors hover-lift">
+                                        <i class="fab fa-instagram"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h3 class="font-semibold text-lg mb-4">Shop</h3>
+                                <ul class="space-y-2">
+                                    <li><a href="#" @click.prevent="showAllProductsPage()" class="footer-link text-gray-600">New Arrivals</a></li>
+                                    <li><a href="#" @click.prevent="showAllProductsPage()" class="footer-link text-gray-600">Custom</a></li>
+                                    <li><a href="#" @click.prevent="showSalePage()" class="footer-link text-gray-600">Sale</a></li>
+                                </ul>
+                            </div>
+                            
+                            <div>
+                                <h3 class="font-semibold text-lg mb-4">Information</h3>
+                                <ul class="space-y-2">
+                                    <li><a href="#" @click.prevent="showHomePage(); setTimeout(() => document.getElementById('about').scrollIntoView({behavior:'smooth'}), 500)" class="footer-link text-gray-600">About Us</a></li>
+                                    <li><a href="https://wa.me/923022501337" target="_blank" class="footer-link text-gray-600">Contact</a></li>
+                                    <li><a href="#" class="footer-link text-gray-600">Shipping & Returns</a></li>
+                                </ul>
+                            </div>
+                            
+                            <div>
+                                <h3 class="font-semibold text-lg mb-4">Contact</h3>
+                                <ul class="space-y-2">
+                                    <li>
+                                        <a href="mailto:trendtrove2989@gmail.com" class="text-gray-600 hover:text-gold transition-colors flex items-center">
+                                            <i class="fas fa-envelope mr-3 text-lg"></i>trendtrove2989@gmail.com
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="https://wa.me/923022501337" target="_blank" class="text-gray-600 hover:text-gold transition-colors flex items-center">
+                                            <i class="fab fa-whatsapp mr-3 text-lg"></i>+923022501337
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="border-t border-gray-200 mt-12 pt-8 text-center text-gray-500">
+                            <p>© 2023 TrendTrove. All rights reserved.</p>
+                        </div>
                     </div>
-                    <p class="text-gray-600 mb-4">Premium fashion for the modern individual. Quality meets style in every piece.</p>
-                    <div class="flex space-x-4">
-                        <a href="#" class="text-gray-600 hover:text-gold transition-colors hover-lift">
-                            <i class="fab fa-facebook-f"></i>
-                        </a>
-                        <a href="#" class="text-gray-600 hover:text-gold transition-colors hover-lift">
-                            <i class="fab fa-instagram"></i>
-                        </a>
-                        <a href="#" class="text-gray-600 hover:text-gold transition-colors hover-lift">
-                            <i class="fab fa-pinterest-p"></i>
-                        </a>
-                        <a href="#" class="text-gray-600 hover:text-gold transition-colors hover-lift">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                    </div>
-                </div>
-                
-                <div>
-                    <h3 class="font-semibold text-lg mb-4">Shop</h3>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="footer-link text-gray-600">New Arrivals</a></li>
-                        <li><a href="#" class="footer-link text-gray-600">Men's Collection</a></li>
-                        <li><a href="#" class="footer-link text-gray-600">Accessories</a></li>
-                        <li><a href="#" class="footer-link text-gray-600">Sale</a></li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h3 class="font-semibold text-lg mb-4">Information</h3>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="footer-link text-gray-600">About Us</a></li>
-                        <li><a href="https://wa.me/message/TY5U3IM2LB6HJ1" target="_blank" class="social-link">Contact</a>
-                        <li><a href="#" class="footer-link text-gray-600">Shipping & Returns</a></li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h3 class="font-semibold text-lg mb-4">Contact</h3>
-                    <ul class="space-y-2">
-                        <li class="text-gray-600">03205270810</li>
-                        <li class="text-gray-600">03130685030</li>
-                        <li class="text-gray-600">trendtrove2989@gmail.com</li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="border-t border-gray-200 mt-12 pt-8 text-center text-gray-500">
-                <p>© 2023 TrendTrove. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
+                </footer>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -3117,6 +3323,32 @@
     <script>
         function app() {
             return {
+                // --- FEATURED ITEMS GETTERS ---
+                get featuredProducts() {
+                    let featured = this.products.filter(p => p.featuredOnHome);
+                    // Fallback: If no products are manually selected, show the newest 8
+                    if (featured.length === 0) return this.products.slice(0, 8);
+                    // Otherwise, show up to 8 of the selected ones
+                    return featured.slice(0, 8);
+                },
+                get featuredCategories() {
+                    // 1. Start with your permanent category (Logic to be implemented later)
+                    let displayCategories = [{
+                        id: 'permanent-logic',
+                        name: 'Custom Orders', // Change this name as needed
+                        description: 'Design your own premium apparel with our custom logic.',
+                        image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80', // Replace with your permanent image
+                        isPermanent: true
+                    }];
+                
+                    // 2. Add the toggled "featured" categories from the database
+                    let featured = this.categories.filter(c => c.featuredOnHome);
+                    
+                    // 3. Combine them (showing the permanent one first, then the featured ones)
+                    return [...displayCategories, ...featured.slice(0, 2)];
+                },
+                // ------------------------------
+
                 // State
                 addCategoryModalOpen: false,
                 removeCategoryModalOpen: false,
@@ -3201,7 +3433,59 @@
                 },
                 userOrders: [],
                 userWishlist: [],
-
+                // --- FEATURED TOGGLE METHODS ---
+                async toggleProductFeatured(product) {
+                    try {
+                        const newValue = !product.featuredOnHome;
+                        
+                        // Prevent featuring more than 8 products to keep the layout intact
+                        if (newValue) {
+                            const currentFeaturedCount = this.products.filter(p => p.featuredOnHome).length;
+                            if (currentFeaturedCount >= 8) {
+                                alert('You can only feature up to 8 products on the home page. Please unfeature a product first.');
+                                return;
+                            }
+                        }
+                        
+                        // Update Firestore
+                        const productRef = window.fs.doc(window.db, "products", product.id);
+                        await window.fs.updateDoc(productRef, { featuredOnHome: newValue });
+                        
+                        // Update Local State immediately
+                        product.featuredOnHome = newValue;
+                        this.showToast(newValue ? 'Product added to Home Page!' : 'Product removed from Home Page.', 'success');
+                    } catch (error) {
+                        console.error("Error toggling featured status:", error);
+                        this.showToast("Error updating product: " + error.message, 'error');
+                    }
+                },
+                
+                async toggleCategoryFeatured(category) {
+                    try {
+                        const newValue = !category.featuredOnHome;
+                        
+                        // Prevent featuring more than 2 categories
+                        if (newValue) {
+                            const currentFeaturedCount = this.categories.filter(c => c.featuredOnHome).length;
+                            if (currentFeaturedCount >= 2) {
+                                alert('You can only feature up to 2 categories on the home page. Please unfeature one first.');
+                                return;
+                            }
+                        }
+                
+                        // Update Firestore
+                        const categoryRef = window.fs.doc(window.db, "categories", category.id);
+                        await window.fs.updateDoc(categoryRef, { featuredOnHome: newValue });
+                        
+                        // Update Local State immediately
+                        category.featuredOnHome = newValue;
+                        this.showToast(newValue ? 'Category added to Home Page!' : 'Category removed from Home Page.', 'success');
+                    } catch (error) {
+                        console.error("Error toggling featured status:", error);
+                        this.showToast("Error updating category: " + error.message, 'error');
+                    }
+                },
+                // -------------------------------
                 // Methods for loading animation
                 startPageTransition(targetPage) {
                     const transitionOverlay = document.querySelector('.transition-overlay');
@@ -3345,7 +3629,9 @@
                         sizes: [...this.newProduct.sizes],
                         colors: JSON.parse(JSON.stringify(this.newProduct.colors)),
                         stockStatus: stockStatus,
-                        createdAt: new Date().toISOString() // Added timestamp for sorting later if needed
+                        createdAt: new Date().toISOString(),
+                        isCustomizable: this.newProduct.isCustomizable,
+                        printOptions: this.newProduct.printOptions
                     };
                 
                     // 4. Save to Firebase Database
@@ -3412,19 +3698,22 @@
                     frontImageUrl: '',
                     detailImageUrls: '',
                     sizes: ['S', 'M', 'L', 'XL'],
-                    colors: [
-                        {
-                            name: 'Red',
-                            code: '#FF0000',
-                            stock: {
-                                'S': 10,
-                                'M': 15,
-                                'L': 8,
-                                'XL': 5
-                            }
-                        }
-                    ]
+                    colors: [{ name: 'White', code: '#FFFFFF', stock: { 'S': 10, 'M': 10, 'L': 10, 'XL': 10 } }],
+                    isCustomizable: false,
+                    printOptions: {
+                        a4: { active: false, price: 400, label: 'A4 Size (8.5 x 11.5 in)' },
+                        a3: { active: false, price: 500, label: 'A3 Size (11.5 x 16 in)' },
+                        pocket: { active: false, price: 200, label: '4x4 Size Top Left' },
+                        sleeve: { active: false, price: 200, label: '4x4 Size Side' }
+                    }
                 },
+                // Customizer States
+                customImage: null,
+                selectedPrintOption: null,
+                mockupView: 'front', // 'front' or 'back'
+                customScale: 1,      // For resizing image
+                customOffsetX: 0,    // For moving X
+                customOffsetY: 0,    // For moving Y
                 saleForm: {
                     originalPrice: 0,
                     salePrice: 0
@@ -3715,7 +4004,47 @@
                 showOrderHistory() {
                     this.startPageTransition('order-history');
                 },
-                
+                handleCustomImageUpload(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => { this.customImage = e.target.result; };
+                        reader.readAsDataURL(file);
+                    }
+                },
+                getPrintPositionClass() {
+                    if (!this.selectedPrintOption) return 'hidden';
+                    const map = { 'a4': 'print-pos-a4', 'a3': 'print-pos-a3', 'pocket': 'print-pos-pocket', 'sleeve': 'print-pos-sleeve' };
+                    return map[this.selectedPrintOption];
+                },
+                // Update showProductDetail to reset custom fields
+                showProductDetail(product) {
+                    this.selectedProduct = product;
+                    this.selectedImageIndex = 0;
+                    this.selectedSize = '';
+                    this.selectedColor = product.colors && product.colors.length > 0 ? product.colors[0] : null; // Auto-select first color for mockup
+                    this.newReview = { rating: 0, comment: '' }; 
+                    this.checkReviewEligibility(product.id);
+                    this.fetchReviews(product.id);
+                    
+                    // Reset Customizer
+                    this.customImage = null;
+                    this.mockupView = 'front';
+                    this.customScale = 1;
+                    this.customOffsetX = 0;
+                    this.customOffsetY = 0;
+                    this.selectedPrintOption = null;
+                    
+                    this.previousPage = this.currentPage;
+                    this.startPageTransition('product-detail');
+                },
+                // Link the permanent "Custom Orders" category block to filter customizable products
+                showCustomCategory() {
+                    this.selectedCategory = { name: 'Custom Orders', description: 'Design your own premium apparel. Upload your logo and choose your print size.' };
+                    this.categoryProducts = this.products.filter(product => product.isCustomizable === true);
+                    this.previousPage = this.currentPage;
+                    this.startPageTransition('category-products');
+                },
                 initializeAnimations() {
                     // Fade in elements on scroll
                     const fadeElements = document.querySelectorAll('.fade-in');
@@ -3786,10 +4115,12 @@
                     window.addEventListener('scroll', () => {
                         const navbar = document.getElementById('navbar');
                         if (window.scrollY > 50) {
-                            navbar.classList.add('bg-white', 'shadow-md');
+                            // Added 'scrolled' to trigger text color change
+                            navbar.classList.add('bg-white', 'shadow-md', 'scrolled');
                             navbar.classList.remove('bg-transparent');
                         } else {
-                            navbar.classList.remove('bg-white', 'shadow-md');
+                            // Removed 'scrolled' when at the top
+                            navbar.classList.remove('bg-white', 'shadow-md', 'scrolled');
                             navbar.classList.add('bg-transparent');
                         }
                     });
@@ -3906,12 +4237,34 @@
                         return;
                     }
                     
+                    // --- YOUR NEW CUSTOM LOGIC STARTS HERE ---
+                    let finalPrice = product.salePrice || product.price;
+                    let customDetails = null;
+
+                    if (product.isCustomizable) {
+                        if (!this.customImage || !this.selectedPrintOption) {
+                            alert('This is a custom product. Please upload an image and select a print size.');
+                            return;
+                        }
+                        const printPrice = parseFloat(product.printOptions[this.selectedPrintOption].price);
+                        finalPrice += printPrice;
+                        customDetails = {
+                            image: this.customImage,
+                            printSize: product.printOptions[this.selectedPrintOption].label,
+                            printPrice: printPrice
+                        };
+                    }
+
                     const cartItem = {
                         ...product,
                         size: this.selectedSize,
                         color: this.selectedColor,
-                        quantity: this.quantity
+                        quantity: this.quantity,
+                        price: finalPrice, // Override base price with final calculated price
+                        salePrice: finalPrice, // Ensure salePrice reflects total so cart math works
+                        customDetails: customDetails
                     };
+                    // --- YOUR NEW CUSTOM LOGIC ENDS HERE ---
                     
                     this.cartItems.push(cartItem);
                     this.cartCount += this.quantity;
@@ -3954,8 +4307,23 @@
                         alert('Selected color and size combination is out of stock');
                         return;
                     }
+
+                    // --- ADDED CUSTOM LOGIC CHECK FOR BUY NOW ---
+                    let checkoutProduct = { ...product }; // clone so we don't modify database permanently
                     
-                    this.selectedProduct = product;
+                    if (checkoutProduct.isCustomizable) {
+                        if (!this.customImage || !this.selectedPrintOption) {
+                            alert('This is a custom product. Please upload an image and select a print size.');
+                            return;
+                        }
+                        // Add the custom printing price to the base price
+                        const printPrice = parseFloat(checkoutProduct.printOptions[this.selectedPrintOption].price);
+                        const basePrice = checkoutProduct.salePrice || checkoutProduct.price;
+                        checkoutProduct.salePrice = basePrice + printPrice; 
+                    }
+                    // ---------------------------------------------
+                    
+                    this.selectedProduct = checkoutProduct; // Use the updated product for checkout
                     
                     // Set default checkout values
                     this.checkoutForm = {
@@ -4071,7 +4439,9 @@
                                 items: [{
                                     id: this.selectedProduct.id,
                                     name: this.selectedProduct.name,
-                                    image: this.selectedProduct.frontImages[0],
+                                    // Save the custom image if it exists, otherwise use standard image
+                                    image: this.selectedProduct.isCustomizable ? this.customImage : this.selectedProduct.frontImages[0],
+                                    printDetails: this.selectedProduct.isCustomizable ? this.selectedProduct.printOptions[this.selectedPrintOption].label : 'Standard',
                                     size: this.selectedSize,
                                     color: this.selectedColor.name,
                                     price: this.selectedProduct.salePrice || this.selectedProduct.price
@@ -4586,7 +4956,7 @@
         const startAudio = () => {
             if (audio.paused) {
                 // Ensure volume is exactly 10% right before playing
-                audio.volume = 0.1; 
+                audio.volume = 0.05; 
                 let playPromise = audio.play();
                 
                 if (playPromise !== undefined) {
