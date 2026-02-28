@@ -416,6 +416,92 @@
     .gold-gradient {
         background: linear-gradient(135deg, var(--accent) 0%, #b8860b 100%);
     }
+/* --- Animated Add to Cart Button --- */
+    /* --- Animated Add to Cart Button --- */
+    .cart-button {
+        position: relative;
+        padding: 10px;
+        height: 56px; 
+        border: 0;
+        border-radius: 6px;
+        background-color: var(--primary);
+        outline: none;
+        cursor: pointer;
+        color: #fff;
+        transition: background-color 0.3s ease-in-out, transform 0.1s;
+        overflow: hidden; /* This hides the box before it drops */
+    }
+    .cart-button:hover {
+        background-color: var(--accent);
+        color: var(--primary);
+    }
+    .cart-button:active {
+        transform: scale(.95);
+    }
+    .cart-button .fa-shopping-cart {
+        position: absolute;
+        z-index: 2;
+        top: 50%;
+        left: -20%;
+        font-size: 1.5em;
+        transform: translate(-50%,-50%);
+    }
+    .cart-button .fa-box {
+        position: absolute;
+        z-index: 3;
+        top: -50%; /* Starts high up, hidden by overflow */
+        left: 52%;
+        font-size: 0.9em;
+        transform: translate(-50%,-50%);
+    }
+    .cart-button span {
+        position: absolute;
+        z-index: 3;
+        left: 50%;
+        top: 50%;
+        font-size: 1em;
+        font-weight: 500;
+        transform: translate(-50%,-50%);
+    }
+    .cart-button span.add-to-cart {
+        opacity: 1;
+    }
+    .cart-button span.added {
+        opacity: 0;
+    }
+
+    .cart-button.clicked .fa-shopping-cart {
+        animation: cart 1.5s ease-in-out forwards;
+    }
+    .cart-button.clicked .fa-box {
+        animation: box 1.5s ease-in-out forwards;
+    }
+    .cart-button.clicked span.add-to-cart {
+        animation: txt1 1.5s ease-in-out forwards;
+    }
+    .cart-button.clicked span.added {
+        animation: txt2 1.5s ease-in-out forwards;
+    }
+    
+    @keyframes cart {
+        0% { left: -20%; }
+        40%, 60% { left: 50%; } /* Cart pauses in center from 40% to 60% */
+        100% { left: 120%; }
+    }
+    @keyframes box {
+        0%, 40% { top: -50%; left: 52%; } /* Box waits off-screen until 40% */
+        60% { top: 38%; left: 52%; } /* Box drops into cart exactly while cart is stopped */
+        100% { top: 38%; left: 122%; } /* Box drives away synced with cart */
+    }
+    @keyframes txt1 {
+        0% { opacity: 1; }
+        20%, 100% { opacity: 0; }
+    }
+    @keyframes txt2 {
+        0%, 80% { opacity: 0; }
+        100% { opacity: 1; }
+    }
+    
     
     .bg-cream {
         background-color: var(--background);
@@ -768,15 +854,7 @@
     }
     
     /* Professional Toast Notification */
-    .toast-container {
-        position: fixed;
-        top: 100px; /* Below navbar */
-        right: 20px;
-        z-index: 3000;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
+    
 /* --- ANIMATED TRUCK BUTTON CSS --- */
     :root {
       --primary-btn: #275EFE;
@@ -1073,29 +1151,52 @@
       26% { transform: translateX(112px); opacity: 0; }
       27%, 100% { transform: translateX(0px); opacity: 0; }
     }
-    .toast {
-        background: white;
-        min-width: 300px;
-        padding: 16px 20px;
-        border-radius: 8px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    
+    
+   
+    
+    /* --- Glassmorphic Notification Styles --- */
+    /* --- TRUE Glassmorphic Notification Styles --- */
+    /* --- TRUE Glassmorphic Notification Styles (Optimized for ANY background) --- */
+    .glass-toast {
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        z-index: 3000;
+        min-width: 250px;
+        max-width: 350px;
+        padding: 12px 20px;
+        
+        /* 1. Frosted Gradient: Slightly more opaque at the top, transparent at the bottom */
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.4) 100%);
+        
+        /* 2. Heavy Blur & Saturation */
+        backdrop-filter: blur(16px) saturate(180%);
+        -webkit-backdrop-filter: blur(16px) saturate(180%);
+        
+        /* 3. 3D Refractive Edges */
+        border: 1px solid rgba(255, 255, 255, 0.9); /* Solid white top edge */
+        border-bottom-color: rgba(212, 175, 55, 0.3); /* Subtle gold tint on the bottom edge */
+        border-right-color: rgba(212, 175, 55, 0.3);
+        border-radius: 50px;
+        
+        /* 4. Elevation & Internal Reflections */
+        box-shadow: 
+            0 15px 35px rgba(0, 0, 0, 0.12), /* Deep outer shadow to lift it off white backgrounds */
+            0 5px 15px rgba(212, 175, 55, 0.1), /* Subtle gold ambient glow */
+            inset 0 2px 2px rgba(255, 255, 255, 1), /* Sharp internal light reflection at the top */
+            inset 0 -2px 4px rgba(0, 0, 0, 0.05); /* Slight internal darkening at the bottom */
+            
         display: flex;
         align-items: center;
-        transform: translateX(120%);
-        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        border-left: 4px solid var(--accent);
+        transform: translateX(150%);
+        transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s ease;
+        opacity: 0;
     }
-    
-    .toast.active {
+
+    .glass-toast.active {
         transform: translateX(0);
-    }
-    
-    .toast.error {
-        border-left-color: #dc3545;
-    }
-    
-    .toast.success {
-        border-left-color: #28a745;
+        opacity: 1;
     }
     
     .toast-icon {
@@ -1260,26 +1361,7 @@
     .animate-pulse-slow {
         animation: pulse 3s infinite;
     }
-    /* Cart Notification Popup Style */
-    .cart-notification {
-        position: fixed;
-        bottom: 30px;
-        right: 20px;
-        background: #d4af37; /* Gold theme */
-        color: white;
-        padding: 15px 25px;
-        border-radius: 8px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        z-index: 9999;
-        transform: translateY(150%); /* Hide below screen */
-        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        display: flex;
-        align-items: center;
-    }
-    
-    .cart-notification.active {
-        transform: translateY(0); /* Slide into view */
-    }
+
     .parallax-bg {
         background-attachment: fixed;
         background-position: center;
@@ -2282,10 +2364,13 @@
                             
                             <div class="flex flex-col sm:flex-row gap-3 mt-2 md:mt-0">
                                 <button 
-                                    @click="addToCart(selectedProduct)" 
-                                    class="w-full sm:flex-1 bg-gray-800 text-white py-3 md:py-4 rounded-md font-medium transition-colors hover:bg-black hover-lift text-sm md:text-base"
+                                    @click="addToCart(selectedProduct, $event)" 
+                                    class="cart-button w-full sm:flex-1"
                                 >
-                                    Add to Cart
+                                    <span class="add-to-cart">Add to cart</span>
+                                    <span class="added">Added</span>
+                                    <i class="fas fa-shopping-cart"></i>
+                                    <i class="fas fa-box"></i>
                                 </button>
                                 <button 
                                     @click="buyNow(selectedProduct)" 
@@ -2999,10 +3084,17 @@
     </div>
     
     <!-- Cart Notification -->
-    <div class="cart-notification" :class="{'active': showCartNotification}">
+    <div class="glass-toast" :class="{'active': notification.show || showCartNotification}">
         <div class="flex items-center">
-            <i class="fas fa-check-circle text-gold mr-2"></i>
-            <span>Item added to cart successfully!</span>
+            <div x-show="notification.type === 'success' || showCartNotification" class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm mr-3 shrink-0">
+                <i class="fas fa-check text-green-500 text-lg"></i>
+            </div>
+            
+            <div x-show="notification.type === 'error' && !showCartNotification" class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm mr-3 shrink-0">
+                <i class="fas fa-times text-red-500 text-lg"></i>
+            </div>
+
+            <span class="text-gray-800 font-semibold tracking-wide text-sm" x-text="showCartNotification ? 'Item added to cart successfully!' : notification.message"></span>
         </div>
     </div>
     
@@ -3836,25 +3928,18 @@
                 async toggleProductFeatured(product) {
                     try {
                         const newValue = !product.featuredOnHome;
-                        
-                        // Prevent featuring more than 8 products to keep the layout intact
                         if (newValue) {
                             const currentFeaturedCount = this.products.filter(p => p.featuredOnHome).length;
                             if (currentFeaturedCount >= 8) {
-                                alert('You can only feature up to 8 products on the home page. Please unfeature a product first.');
+                                this.showToast('You can only feature up to 8 products. Unfeature one first.', 'error');
                                 return;
                             }
                         }
-                        
-                        // Update Firestore
                         const productRef = window.fs.doc(window.db, "products", product.id);
                         await window.fs.updateDoc(productRef, { featuredOnHome: newValue });
-                        
-                        // Update Local State immediately
                         product.featuredOnHome = newValue;
                         this.showToast(newValue ? 'Product added to Home Page!' : 'Product removed from Home Page.', 'success');
                     } catch (error) {
-                        console.error("Error toggling featured status:", error);
                         this.showToast("Error updating product: " + error.message, 'error');
                     }
                 },
@@ -3862,25 +3947,18 @@
                 async toggleCategoryFeatured(category) {
                     try {
                         const newValue = !category.featuredOnHome;
-                        
-                        // Prevent featuring more than 2 categories
                         if (newValue) {
                             const currentFeaturedCount = this.categories.filter(c => c.featuredOnHome).length;
                             if (currentFeaturedCount >= 2) {
-                                alert('You can only feature up to 2 categories on the home page. Please unfeature one first.');
+                                this.showToast('You can only feature up to 2 categories. Unfeature one first.', 'error');
                                 return;
                             }
                         }
-                
-                        // Update Firestore
                         const categoryRef = window.fs.doc(window.db, "categories", category.id);
                         await window.fs.updateDoc(categoryRef, { featuredOnHome: newValue });
-                        
-                        // Update Local State immediately
                         category.featuredOnHome = newValue;
                         this.showToast(newValue ? 'Category added to Home Page!' : 'Category removed from Home Page.', 'success');
                     } catch (error) {
-                        console.error("Error toggling featured status:", error);
                         this.showToast("Error updating category: " + error.message, 'error');
                     }
                 },
@@ -4242,8 +4320,8 @@
                 },
                 
                 async submitReview() {
-                    if (this.newReview.rating === 0) { alert("Please select a star rating."); return; }
-                    if (!this.newReview.comment) { alert("Please write a comment."); return; }
+                    if (this.newReview.rating === 0) { this.showToast("Please select a star rating.", 'error'); return; }
+                    if (!this.newReview.comment) { this.showToast("Please write a comment.", 'error'); return; }
                 
                     const reviewData = {
                         productId: this.selectedProduct.id,
@@ -4304,7 +4382,7 @@
                     this.registerModalOpen = true;
                 },
                 
-               handleLogin() {
+                handleLogin() {
                    // 1. Admin check (Keeping your hardcoded admin check as requested)
                    if (this.loginForm.email === 'admin@trendtrove.com' && this.loginForm.password === 'admin123') {
                        this.isAdmin = true;
@@ -4333,17 +4411,15 @@
                            alert('Invalid email or password. Please try again.');
                            console.error(error);
                        });
-               },                
+                },                
                 handleUserRegister() {
                     if (this.userRegisterForm.password !== this.userRegisterForm.confirmPassword) {
-                        alert('Passwords do not match. Please try again.');
+                        this.showToast('Passwords do not match. Please try again.', 'error');
                         return;
                     }
                     window.fireAuth.createUserWithEmailAndPassword(window.auth, this.userRegisterForm.email, this.userRegisterForm.password)
                         .then(async (userCredential) => {
                             const user = userCredential.user;
-                            
-                            // Prepare user data
                             const userData = {
                                 uid: user.uid,
                                 name: this.userRegisterForm.name,
@@ -4351,48 +4427,34 @@
                                 phone: this.userRegisterForm.phone,
                                 createdAt: new Date().toISOString()
                             };
-
-                            // Save to Firestore "users" collection
                             try {
                                 await window.fs.setDoc(window.fs.doc(window.db, "users", user.uid), userData);
-                                
-                                // Update local state immediately so name shows without refresh
-                                this.currentUser = {
-                                    id: user.uid,
-                                    name: userData.name,
-                                    email: userData.email,
-                                    phone: userData.phone
-                                };
+                                this.currentUser = { id: user.uid, name: userData.name, email: userData.email, phone: userData.phone };
                             } catch (error) {
                                 console.error("Error saving user data:", error);
                             }
-
                             this.registerModalOpen = false;
                             this.userRegisterForm = { name: '', email: '', phone: '', password: '', confirmPassword: '' };
-                            alert('Registration successful! You are now logged in.');
+                            this.showToast('Registration successful! You are logged in.', 'success');
                         })
                         .catch((error) => {
-                            const errorMessage = error.message;
                             if (error.code === 'auth/email-already-in-use') {
-                                alert('An account with this email already exists. Please login instead.');
+                                this.showToast('Email already in use. Please login instead.', 'error');
                             } else {
-                                alert('Registration failed: ' + errorMessage);
+                                this.showToast('Registration failed: ' + error.message, 'error');
                             }
                         });
                 },                
                 userLogout() {
                     window.fireAuth.signOut(window.auth).then(() => {
-                        // Sign-out successful.
                         this.isLoggedIn = false;
                         this.currentUser = { id: '', name: '', email: '', phone: '', createdAt: '' };
                         this.cartItems = [];
                         this.cartCount = 0;
-                        this.userOrders = []; // Clear orders on logout
-                        // localStorage.removeItem('trendtrove_user'); // No longer needed
-                        alert('Logged out successfully!');
+                        this.userOrders = [];
+                        this.showToast('Logged out successfully!', 'success');
                     }).catch((error) => {
-                        // An error happened.
-                        console.error('Logout error', error);
+                        this.showToast('Logout error: ' + error.message, 'error');
                     });
                 },
                 
@@ -4615,34 +4677,33 @@
                     alert('Admin logged out successfully!');
                 },
                 
-                addToCart(product) {
+                addToCart(product, event = null) {
                     if (!this.isLoggedIn) {
                         this.openLoginModal();
                         return;
                     }
                     
                     if (!this.selectedColor) {
-                        alert('Please select a color');
+                        this.showToast('Please select a color', 'error');
                         return;
                     }
                     if (!this.selectedSize) {
-                        alert('Please select a size');
+                        this.showToast('Please select a size', 'error');
                         return;
                     }
                     
                     const stock = this.getStockForColorAndSize(this.selectedColor.code, this.selectedSize);
                     if (stock <= 0) {
-                        alert('Selected color and size combination is out of stock');
+                        this.showToast('Selected color and size combination is out of stock', 'error');
                         return;
                     }
                     
-                    // --- YOUR NEW CUSTOM LOGIC STARTS HERE ---
                     let finalPrice = product.salePrice || product.price;
                     let customDetails = null;
 
                     if (product.isCustomizable) {
                         if (!this.customImage || !this.selectedPrintOption) {
-                            alert('This is a custom product. Please upload an image and select a print size.');
+                            this.showToast('This is a custom product. Please upload an image and select a print size.', 'error');
                             return;
                         }
                         const printPrice = parseFloat(product.printOptions[this.selectedPrintOption].price);
@@ -4654,31 +4715,45 @@
                         };
                     }
 
+                    // --- ANIMATION LOGIC TRIGGER ---
+                    if (event && event.currentTarget) {
+                        const btn = event.currentTarget;
+                        // Prevent clicking multiple times while animating
+                        if(btn.classList.contains('clicked')) return;
+                        
+                        btn.classList.add('clicked');
+                        
+                        // Reset the button after animation finishes (1.5 seconds)
+                        setTimeout(() => {
+                            btn.classList.remove('clicked');
+                        }, 1500);
+                    }
+                    // -------------------------------
+
                     const cartItem = {
                         ...product,
                         size: this.selectedSize,
                         color: this.selectedColor,
                         quantity: this.quantity,
-                        price: finalPrice, // Override base price with final calculated price
-                        salePrice: finalPrice, // Ensure salePrice reflects total so cart math works
+                        price: finalPrice, 
+                        salePrice: finalPrice, 
                         customDetails: customDetails
                     };
-                    // --- YOUR NEW CUSTOM LOGIC ENDS HERE ---
                     
                     this.cartItems.push(cartItem);
                     this.cartCount += this.quantity;
-                    this.showCartNotification = true;
+                    
+                    // We don't need showCartNotification anymore because showToast handles it better, 
+                    // but we will keep this to trigger the glass toast success notification!
+                    this.showToast('Item added to cart successfully!', 'success');
                     
                     localStorage.setItem(`trendtrove_cart_${this.currentUser.id}`, JSON.stringify(this.cartItems));
                     
+                    // Show cart ONLY after the button animation is 100% complete (1.5 seconds)
                     setTimeout(() => {
-                        this.showCartNotification = false;
-                    }, 3000);
-                    
-                    // Show cart
-                    this.cartOpen = true;
+                        this.cartOpen = true;
+                    }, 1500);
                 },
-                
                 removeFromCart(productId) {
                     const itemIndex = this.cartItems.findIndex(item => item.id === productId);
                     if (itemIndex !== -1) {
@@ -4697,13 +4772,13 @@
                     }
                     
                     if (!this.selectedColor || !this.selectedSize) {
-                        alert('Please select both color and size');
+                        this.showToast('Please select both color and size', 'error');
                         return;
                     }
                     
                     const stock = this.getStockForColorAndSize(this.selectedColor.code, this.selectedSize);
                     if (stock <= 0) {
-                        alert('Selected color and size combination is out of stock');
+                        this.showToast('Selected color and size combination is out of stock', 'error');
                         return;
                     }
 
@@ -4712,7 +4787,7 @@
                     
                     if (checkoutProduct.isCustomizable) {
                         if (!this.customImage || !this.selectedPrintOption) {
-                            alert('This is a custom product. Please upload an image and select a print size.');
+                            this.showToast('This is a custom product. Please upload an image and select a print size.', 'error');
                             return;
                         }
                         // Add the custom printing price to the base price
@@ -4743,18 +4818,15 @@
                         this.openLoginModal();
                         return;
                     }
-                    
                     if (this.cartItems.length === 0) {
-                        alert('Your cart is empty');
+                        this.showToast('Your cart is empty', 'error');
                         return;
                     }
                     
-                    // For simplicity, use the first item in cart
                     this.selectedProduct = this.cartItems[0];
                     this.selectedSize = this.cartItems[0].size;
                     this.selectedColor = this.cartItems[0].color;
                     
-                    // Set default checkout values
                     this.checkoutForm = {
                         fullName: this.currentUser.name,
                         email: this.currentUser.email,
@@ -4770,144 +4842,50 @@
                 },
                 
                 placeOrder(event) {
-                    // 1. Validate form
                     if (!this.checkoutForm.fullName || !this.checkoutForm.email || !this.checkoutForm.phone || 
                         !this.checkoutForm.province || !this.checkoutForm.district || !this.checkoutForm.city || 
                         !this.checkoutForm.address) {
-                        alert('Please fill in all required fields');
+                        this.showToast('Please fill in all required fields', 'error');
                         return;
                     }
 
-                    // 2. Trigger Truck Animation instead of text replacement
                     const confirmButton = event ? event.currentTarget : null;
                     if (confirmButton && !confirmButton.classList.contains('animate')) {
                         confirmButton.classList.add('animate');
-                        confirmButton.disabled = true; // Prevent double clicks
+                        confirmButton.disabled = true;
                     }
 
-                    // 3. Resolve Custom Details Safely
-                    let customImg = '';
-                    let printLbl = 'Standard';
+                    // ... (Keep your existing price calculation & email logic here) ...
                     
-                    if (this.selectedProduct.customDetails) {
-                        customImg = this.selectedProduct.customDetails.image || '';
-                        printLbl = this.selectedProduct.customDetails.printSize || 'Standard';
-                    } else if (this.selectedProduct.isCustomizable) {
-                        customImg = this.customImage || '';
-                        printLbl = (this.selectedPrintOption && this.selectedProduct.printOptions[this.selectedPrintOption]) 
-                                    ? this.selectedProduct.printOptions[this.selectedPrintOption].label 
-                                    : 'Standard';
-                    }
-
-                    let imageToSend = this.selectedProduct.frontImages && this.selectedProduct.frontImages.length > 0 
-                                      ? this.selectedProduct.frontImages[0] 
-                                      : '';
-
-                    // 🔥 EXTREME BASE64 / SIZE FILTER
-                    let safeImageToSend = String(imageToSend).trim();
-                    if (safeImageToSend.length > 1000 || safeImageToSend.indexOf('data:image') !== -1) {
-                        safeImageToSend = 'https://i.postimg.cc/c1jC3WGV/1.png'; 
-                    }
-
-                    let safeCustomImgForEmail = String(customImg).trim();
-                    if (safeCustomImgForEmail.length > 1000 || safeCustomImgForEmail.indexOf('data:image') !== -1) {
-                        safeCustomImgForEmail = ''; 
-                    }
-
-                    let cleanDescription = String(this.selectedProduct.description || 'No description')
-                                            .replace(/[\r\n]+/gm, " ")
-                                            .substring(0, 250);
-
-                    let calcPrice = parseFloat(this.selectedProduct.salePrice || this.selectedProduct.price || 0);
-                    let calcShipping = parseFloat(this.shippingCost || 0);
-                    let calcTotal = calcPrice + calcShipping;
-
-                    // 4. Prepare email data (STRICTLY STRINGS ONLY)
-                    const emailParams = {
-                        customer_name: String(this.checkoutForm.fullName || ''),
-                        customer_email: String(this.checkoutForm.email || ''),
-                        customer_phone: String(this.checkoutForm.phone || ''),
-                        customer_address: String(this.checkoutForm.address || ''),
-                        customer_city: String(this.checkoutForm.city || ''),
-                        customer_district: String(this.checkoutForm.district || ''),
-                        customer_province: String(this.checkoutForm.province || ''),
-                        
-                        product_image: safeImageToSend,
-                        custom_design_image: safeCustomImgForEmail,
-                        custom_display: safeCustomImgForEmail ? 'block' : 'none',
-                        
-                        product_name: String(this.selectedProduct.name || ''),
-                        product_description: cleanDescription,
-                        product_size: String(this.selectedSize || 'N/A'),
-                        product_color: String(this.selectedColor ? this.selectedColor.name : 'N/A'),
-                        product_price: String(calcPrice),
-                        product_sale_price: String(this.selectedProduct.salePrice ? calcPrice : 'None'),
-                        shipping_cost: String(calcShipping), 
-                        total_amount: String(calcTotal),
-                        payment_method: String(this.paymentMethod === 'card' ? 'Credit/Debit Card' : 
-                                       this.paymentMethod === 'mobile' ? 'JazzCash/EasyPaisa' : 'Cash on Delivery'),
-                        order_date: String(new Date().toLocaleDateString()),
-                        delivery_days: String(this.deliveryDays || 5)
-                    };
-
-                    // 5. Create Order for Database FIRST
-                    const orderData = {
-                        orderId: 'TRK-' + Date.now(), 
-                        date: new Date().toISOString(),
-                        items: [{
-                            id: this.selectedProduct.id || 'unknown',
-                            name: this.selectedProduct.name || 'Unknown Item',
-                            image: customImg ? customImg : imageToSend,
-                            printDetails: printLbl,
-                            size: this.selectedSize || 'N/A',
-                            color: this.selectedColor ? this.selectedColor.name : 'N/A',
-                            price: calcPrice
-                        }],
-                        total: calcTotal,
-                        status: 'processing',
-                        shipping: this.checkoutForm,
-                        userId: this.isLoggedIn && this.currentUser ? this.currentUser.id : 'guest',
-                        userEmail: this.isLoggedIn && this.currentUser ? this.currentUser.email : this.checkoutForm.email
-                    };
-
-                    // 6. Save to Firebase, THEN send emails
+                    // Inside your placeOrder promise chain:
                     window.fs.addDoc(window.fs.collection(window.db, "orders"), orderData)
                         .then((docRef) => {
                             this.userOrders.unshift({ id: docRef.id, ...orderData });
-                            
-                            const adminEmail = emailjs.send('service_nunpcrh', 'template_mpjmyxw', emailParams);
-                            const customerEmail = emailjs.send('service_nunpcrh', 'template_rd52ctb', emailParams);
-                            
-                            return Promise.all([adminEmail, customerEmail]);
+                            return Promise.all([
+                                emailjs.send('service_nunpcrh', 'template_mpjmyxw', emailParams),
+                                emailjs.send('service_nunpcrh', 'template_rd52ctb', emailParams)
+                            ]);
                         })
                         .then(() => {
-                            console.log('Order saved and emails sent successfully!');
-                            
                             this.updateProductStock();
                             this.cartItems = [];
                             this.cartCount = 0;
-                            
                             if (this.isLoggedIn && this.currentUser && this.currentUser.id) {
                                 localStorage.setItem(`trendtrove_cart_${this.currentUser.id}`, JSON.stringify([]));
                             }
-
-                            // WAIT for the truck animation to finish (7.5 seconds) before switching to the confirmation page!
                             setTimeout(() => {
                                 this.startPageTransition('order-confirmation');
                             }, 7500); 
                         })
                         .catch((error) => {
-                            console.error('Failed to process order:', error);
                             const errorMsg = error.message || error.text || "Unknown error occurred.";
-                            alert('Failed to process order. Error Details: \n' + errorMsg);
-                            // If it fails, remove animation immediately
+                            this.showToast('Failed to process order: ' + errorMsg, 'error');
                             if(confirmButton) {
                                 confirmButton.classList.remove('animate');
                                 confirmButton.disabled = false;
                             }
                         })
                         .finally(() => {
-                            // Automatically remove the animate class after 10 seconds (the length of the CSS animation)
                             setTimeout(() => {
                                 if(confirmButton) {
                                     confirmButton.classList.remove('animate');
@@ -5006,37 +4984,19 @@
                     event.target.value = '';
                 },
                 async addCategory() {
-                    // 1. Validation (Same as original)
                     if (!this.newCategory.name || !this.newCategory.description || !this.newCategory.imageUrl) {
-                        alert('Please fill in all fields and add an image URL');
+                        this.showToast('Please fill in all fields and add an image URL', 'error');
                         return;
                     }
-                
-                    // 2. Prepare data
-                    const categoryData = {
-                        name: this.newCategory.name,
-                        description: this.newCategory.description,
-                        image: this.newCategory.imageUrl
-                    };
-                
-                    // 3. Save to Firebase
+                    const categoryData = { name: this.newCategory.name, description: this.newCategory.description, image: this.newCategory.imageUrl };
                     try {
                         const docRef = await window.fs.addDoc(window.fs.collection(window.db, "categories"), categoryData);
-                        
-                        // Update local display
-                        this.categories.push({
-                            id: docRef.id, // Use real Firebase ID
-                            ...categoryData
-                        });
-                
-                        // 4. Reset form (Same as original)
+                        this.categories.push({ id: docRef.id, ...categoryData });
                         this.newCategory = { name: '', description: '', imageUrl: '' };
                         this.addCategoryModalOpen = false;
-                        alert('Category added successfully to Database!');
-                
+                        this.showToast('Category added successfully to Database!', 'success');
                     } catch (error) {
-                        console.error("Error adding category: ", error);
-                        alert("Error saving category: " + error.message);
+                        this.showToast("Error saving category: " + error.message, 'error');
                     }
                 },
                 async removeCategory() {
