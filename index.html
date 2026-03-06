@@ -114,6 +114,26 @@
         height: 400px;
         object-fit: cover;
     }
+    .mockup-container {
+        position: relative;
+        width: 100%;
+        max-width: 500px;
+        margin: 0 auto;
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: #ffffff !important; /* Always white base */
+        transition: background-color 0.3s ease;
+    }
+    
+    .mockup-color-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        pointer-events: none;
+    }
 /* --- CUSTOM MOCKUP BUILDER STYLES --- */
     .mockup-container { 
         position: relative; 
@@ -142,11 +162,12 @@
         border: 1px dashed rgba(212, 175, 55, 0.4); /* Subtle guide line */
     }
     .mockup-design { 
-        width: 100%;
-        height: 100%;
+        max-width: 100%;
+        max-height: 100%;
         object-fit: contain;
         transform-origin: center;
-        /* Removed pointer-events:none so it can be targeted if needed */
+        user-select: none;
+        -webkit-user-drag: none;
     }
     /* Printing Positions - Defines the boundaries of the print area */
     .print-pos-a4 { top: 25%; left: 30%; width: 40%; height: 45%; }
@@ -318,14 +339,8 @@
         transition: background-color 0.3s ease;
     }
     /* mix-blend-mode: multiply allows the white shirt to take on the background color while keeping shadows! */
-    .mockup-base { 
-        width: 100%; 
-        display: block; 
-        mix-blend-mode: multiply; 
-        position: relative; 
-        z-index: 2; 
-        pointer-events: none; 
-    }
+
+    
     .mockup-design { 
         position: absolute; 
         z-index: 3; 
@@ -2236,17 +2251,58 @@
                                         <button x-show="selectedProduct.detailImages && selectedProduct.detailImages.length > 0" @click="mockupView = 'back'" :class="mockupView === 'back' ? 'bg-gold text-white' : 'bg-white border border-gray-300'" class="px-3 py-1 md:px-4 md:py-1 rounded-full text-xs md:text-sm transition-colors shadow-sm">Back View</button>
                                     </div>
 
-                                    <div class="mockup-container border border-gray-200 shadow-inner" :style="`background-color: ${selectedColor ? selectedColor.code : '#ffffff'}`">
-                                        <img :src="mockupView === 'front' ? selectedProduct.frontImages[0] : selectedProduct.detailImages[0]" class="mockup-base w-full h-auto">
+                                    <div class="mockup-container border border-gray-200 shadow-inner" :class="!customImage ? 'cursor-pointer' : ''" style="background-color: #f0f0f0;" @click="if(!customImage) document.getElementById('customImageInput').click()" :title="!customImage ? 'Click to upload your image' : ''">
+                                        <canvas id="shirtColorCanvas" class="w-full h-auto block" style="position:relative; z-index:2; pointer-events:none;"></canvas>
+                                        <img 
+                                            :src="mockupView === 'front' ? selectedProduct.frontImages[0] : selectedProduct.detailImages[0]"
+                                            class="mockup-base-hidden"
+                                            style="display:none;"
+                                            @load="applyShirtColor()"
+                                            x-ref="shirtImg"
+                                            :key="mockupView + (selectedColor ? selectedColor.code : '')"
+                                        >
                                         
                                         <template x-if="customImage && selectedPrintOption">
                                             <div class="print-area" :class="getPrintPositionClass()">
-                                                <img :src="customImage" class="mockup-design" :style="`transform: translate(${customOffsetX}%, ${customOffsetY}%) scale(${customScale});`">
+                                                <!-- Draggable & Resizable Image -->
+                                                <div
+                                                    class="absolute inset-0 flex items-center justify-center"
+                                                    style="cursor: move; touch-action: none;"
+                                                    @mousedown="startDrag($event)"
+                                                    @touchstart.prevent="startDragTouch($event)"
+                                                >
+                                                    <img
+                                                        :src="customImage"
+                                                        class="mockup-design select-none pointer-events-none"
+                                                        :style="`transform: translate(${customOffsetX}px, ${customOffsetY}px) scale(${customScale}); transform-origin: center;`"
+                                                        draggable="false"
+                                                    >
+                                                    <!-- Delete Button -->
+                                                    <button
+                                                        class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg z-20 hover:bg-red-600"
+                                                        style="pointer-events: all; cursor: pointer;"
+                                                        @click.stop="customImage = null; customOffsetX = 0; customOffsetY = 0; customScale = 1;"
+                                                        title="Remove image"
+                                                    >
+                                                        <i class="fas fa-times text-xs"></i>
+                                                    </button>
+                                                    <!-- Resize Handle (bottom-right corner) -->
+                                                    <div
+                                                        class="absolute bottom-1 right-1 w-5 h-5 bg-white border-2 border-gold rounded-sm z-20 flex items-center justify-center shadow"
+                                                        style="pointer-events: all; cursor: se-resize;"
+                                                        @mousedown.stop="startResize($event)"
+                                                        @touchstart.stop.prevent="startResizeTouch($event)"
+                                                        title="Drag to resize"
+                                                    >
+                                                        <i class="fas fa-expand-arrows-alt text-gold" style="font-size: 8px;"></i>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </template>
                                         
-                                        <div x-show="!customImage" class="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-                                            <span class="bg-black bg-opacity-50 text-white px-3 py-1 md:px-4 md:py-2 rounded-full text-xs md:text-sm text-center mx-4">Upload image to preview</span>
+                                        <div x-show="!customImage" class="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none">
+                                            <i class="fas fa-cloud-upload-alt text-white text-3xl mb-2 drop-shadow-lg"></i>
+                                            <span class="bg-black bg-opacity-60 text-white px-3 py-2 md:px-4 md:py-2 rounded-full text-xs md:text-sm text-center mx-4">Tap here to upload your image</span>
                                         </div>
                                     </div>
                                     <div class="flex space-x-2 overflow-x-auto pb-2 mt-4">
@@ -2335,30 +2391,9 @@
                                     </div>
 
                                     <label class="block text-xs md:text-sm font-semibold mb-1 text-gray-700">2. Upload Your Image/Logo</label>
-                                    <input type="file" @change="handleCustomImageUpload" accept="image/*" class="w-full text-xs md:text-sm text-gray-500 file:mr-2 md:file:mr-4 file:py-1 md:file:py-2 file:px-3 md:file:px-4 file:rounded-full file:border-0 file:text-xs md:file:text-sm file:font-semibold file:bg-gold file:text-primary hover:file:bg-yellow-600 cursor-pointer bg-white border border-gray-200 rounded p-1 mb-4">
+                                    <input type="file" id="customImageInput" @change="handleCustomImageUpload" accept="image/*" class="hidden">
 
-                                    <div x-show="customImage" class="bg-white p-3 border border-gray-200 rounded-md">
-                                        <label class="block text-xs md:text-sm font-semibold mb-2 text-gray-700">3. Adjust Image Position</label>
-                                        
-                                        <div class="mb-3">
-                                            <div class="flex justify-between text-[10px] md:text-xs text-gray-500 mb-1"><span>Size (Zoom)</span> <span x-text="Math.round(customScale * 100) + '%'"></span></div>
-                                            <input type="range" min="0.2" max="2" step="0.05" x-model="customScale" class="w-full accent-gold">
-                                        </div>
-                                        
-                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                                            <div>
-                                                <div class="flex justify-between text-[10px] md:text-xs text-gray-500 mb-1"><span>Left / Right</span></div>
-                                                <input type="range" min="-100" max="100" step="1" x-model="customOffsetX" class="w-full accent-gold">
-                                            </div>
-                                            <div>
-                                                <div class="flex justify-between text-[10px] md:text-xs text-gray-500 mb-1"><span>Up / Down</span></div>
-                                                <input type="range" min="-100" max="100" step="1" x-model="customOffsetY" class="w-full accent-gold">
-                                            </div>
-                                        </div>
-                                        <div class="text-right mt-2 md:mt-3">
-                                            <button @click="customScale=1; customOffsetX=0; customOffsetY=0" class="text-[10px] md:text-xs text-red-500 hover:underline">Reset Position</button>
-                                        </div>
-                                    </div>
+                                    
                                 </div>
                             </template>
                             
@@ -4272,7 +4307,8 @@
                             }
                         });
                     }
-                
+                    this.$watch('selectedColor', () => { this.applyShirtColor(); });
+                    this.$watch('mockupView', () => { this.applyShirtColor(); });
                     // Determine active page
                     setTimeout(() => {
                         document.querySelectorAll('.page-container').forEach(page => {
@@ -4411,7 +4447,8 @@
                            alert('Invalid email or password. Please try again.');
                            console.error(error);
                        });
-                },                
+                },       
+         
                 handleUserRegister() {
                     if (this.userRegisterForm.password !== this.userRegisterForm.confirmPassword) {
                         this.showToast('Passwords do not match. Please try again.', 'error');
@@ -4465,11 +4502,88 @@
                 showOrderHistory() {
                     this.startPageTransition('order-history');
                 },
+                startDrag(e) {
+                    if (e.target.closest('button') || e.target.closest('[data-resize]')) return;
+                    const startX = e.clientX;
+                    const startY = e.clientY;
+                    const startOffsetX = parseFloat(this.customOffsetX) || 0;
+                    const startOffsetY = parseFloat(this.customOffsetY) || 0;
+                
+                    const onMove = (ev) => {
+                        this.customOffsetX = startOffsetX + (ev.clientX - startX);
+                        this.customOffsetY = startOffsetY + (ev.clientY - startY);
+                    };
+                    const onUp = () => {
+                        window.removeEventListener('mousemove', onMove);
+                        window.removeEventListener('mouseup', onUp);
+                    };
+                    window.addEventListener('mousemove', onMove);
+                    window.addEventListener('mouseup', onUp);
+                },
+                
+                startDragTouch(e) {
+                    const touch = e.touches[0];
+                    const startX = touch.clientX;
+                    const startY = touch.clientY;
+                    const startOffsetX = parseFloat(this.customOffsetX) || 0;
+                    const startOffsetY = parseFloat(this.customOffsetY) || 0;
+                
+                    const onMove = (ev) => {
+                        const t = ev.touches[0];
+                        this.customOffsetX = startOffsetX + (t.clientX - startX);
+                        this.customOffsetY = startOffsetY + (t.clientY - startY);
+                    };
+                    const onEnd = () => {
+                        window.removeEventListener('touchmove', onMove);
+                        window.removeEventListener('touchend', onEnd);
+                    };
+                    window.addEventListener('touchmove', onMove, { passive: false });
+                    window.addEventListener('touchend', onEnd);
+                },
+                
+                startResize(e) {
+                    e.preventDefault();
+                    const startX = e.clientX;
+                    const startScale = parseFloat(this.customScale) || 1;
+                
+                    const onMove = (ev) => {
+                        const delta = (ev.clientX - startX) / 100;
+                        this.customScale = Math.min(3, Math.max(0.1, startScale + delta));
+                    };
+                    const onUp = () => {
+                        window.removeEventListener('mousemove', onMove);
+                        window.removeEventListener('mouseup', onUp);
+                    };
+                    window.addEventListener('mousemove', onMove);
+                    window.addEventListener('mouseup', onUp);
+                },
+                
+                startResizeTouch(e) {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    const startX = touch.clientX;
+                    const startScale = parseFloat(this.customScale) || 1;
+                
+                    const onMove = (ev) => {
+                        const t = ev.touches[0];
+                        const delta = (t.clientX - startX) / 100;
+                        this.customScale = Math.min(3, Math.max(0.1, startScale + delta));
+                    };
+                    const onEnd = () => {
+                        window.removeEventListener('touchmove', onMove);
+                        window.removeEventListener('touchend', onEnd);
+                    };
+                    window.addEventListener('touchmove', onMove, { passive: false });
+                    window.addEventListener('touchend', onEnd);
+                },
                 handleCustomImageUpload(event) {
                     const file = event.target.files[0];
                     if (file) {
                         const reader = new FileReader();
-                        reader.onload = (e) => { this.customImage = e.target.result; };
+                        reader.onload = (e) => {
+                            this.customImage = e.target.result;
+                            this.selectedPrintOption = 'a4';
+                        };
                         reader.readAsDataURL(file);
                     }
                 },
@@ -4489,15 +4603,27 @@
                     this.fetchReviews(product.id);
                     
                     // Reset Customizer
+                    // Reset Customizer
                     this.customImage = null;
                     this.mockupView = 'front';
                     this.customScale = 1;
                     this.customOffsetX = 0;
                     this.customOffsetY = 0;
-                    this.selectedPrintOption = null;
+                    this.customImage = null;
+                    this.mockupView = 'front';
+                    this.customScale = 1;
+                    this.customOffsetX = 0;
+                    this.customOffsetY = 0;
+                    this.selectedPrintOption = 'a4';
+                    
+                    // Make a4 active by default if product is customizable
+                    if (product.isCustomizable && product.printOptions && product.printOptions.a4) {
+                        product.printOptions.a4.active = true;
+                    }
                     
                     this.previousPage = this.currentPage;
                     this.startPageTransition('product-detail');
+                    this.$nextTick(() => this.applyShirtColor());
                 },
                 // Link the permanent "Custom Orders" category block to filter customizable products
                 showCustomCategory() {
@@ -5166,7 +5292,105 @@
                         }
                     }
                 },
+                applyShirtColor() {
+                    const canvas = document.getElementById('shirtColorCanvas');
+                    if (!canvas) return;
+                    const ctx = canvas.getContext('2d');
                 
+                    const imgSrc = this.mockupView === 'front'
+                        ? this.selectedProduct.frontImages[0]
+                        : (this.selectedProduct.detailImages[0] || this.selectedProduct.frontImages[0]);
+                
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                
+                    img.onload = () => {
+                        canvas.width = img.naturalWidth;
+                        canvas.height = img.naturalHeight;
+                        ctx.drawImage(img, 0, 0);
+                
+                        if (!this.selectedColor || this.selectedColor.code === '#ffffff' || this.selectedColor.code === '#FFFFFF') {
+                            // No recolor needed for white - just show original
+                            return;
+                        }
+                
+                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        const data = imageData.data;
+                        const w = canvas.width;
+                        const h = canvas.height;
+                
+                        // --- Step 1: Flood-fill from corners to detect background pixels ---
+                        const isBg = new Uint8Array(w * h); // 0 = unknown, 1 = background
+                        const queue = [];
+                        const tolerance = 30; // How similar a pixel must be to background color to be included
+                
+                        // Sample the background color from top-left corner
+                        const bgR = data[0], bgG = data[1], bgB = data[2];
+                
+                        function colorDiff(i) {
+                            return Math.abs(data[i] - bgR) + Math.abs(data[i+1] - bgG) + Math.abs(data[i+2] - bgB);
+                        }
+                
+                        function enqueue(x, y) {
+                            const idx = y * w + x;
+                            if (x < 0 || x >= w || y < 0 || y >= h) return;
+                            if (isBg[idx]) return;
+                            const i = idx * 4;
+                            if (colorDiff(i) <= tolerance) {
+                                isBg[idx] = 1;
+                                queue.push(x, y);
+                            }
+                        }
+                
+                        // Seed from all 4 edges
+                        for (let x = 0; x < w; x++) { enqueue(x, 0); enqueue(x, h-1); }
+                        for (let y = 0; y < h; y++) { enqueue(0, y); enqueue(w-1, y); }
+                
+                        // BFS flood fill
+                        let qi = 0;
+                        while (qi < queue.length) {
+                            const x = queue[qi++], y = queue[qi++];
+                            enqueue(x+1, y); enqueue(x-1, y);
+                            enqueue(x, y+1); enqueue(x, y-1);
+                        }
+                
+                        // --- Step 2: Parse target color ---
+                        const hex = this.selectedColor.code.replace('#', '');
+                        const tR = parseInt(hex.slice(0, 2), 16);
+                        const tG = parseInt(hex.slice(2, 4), 16);
+                        const tB = parseInt(hex.slice(4, 6), 16);
+                
+                        // --- Step 3: Recolor only shirt pixels (not background) ---
+                        for (let idx = 0; idx < w * h; idx++) {
+                            if (isBg[idx]) continue; // skip background
+                
+                            const i = idx * 4;
+                            const r = data[i], g = data[i+1], b = data[i+2];
+                
+                            // Use luminance to preserve shirt shadows/folds/texture
+                            const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+                
+                            data[i]   = Math.round(tR * lum);
+                            data[i+1] = Math.round(tG * lum);
+                            data[i+2] = Math.round(tB * lum);
+                        }
+                
+                        ctx.putImageData(imageData, 0, 0);
+                    };
+                
+                    img.onerror = () => {
+                        // Fallback: just draw original image without recolor
+                        const fallback = new Image();
+                        fallback.onload = () => {
+                            canvas.width = fallback.naturalWidth;
+                            canvas.height = fallback.naturalHeight;
+                            ctx.drawImage(fallback, 0, 0);
+                        };
+                        fallback.src = imgSrc;
+                    };
+                
+                    img.src = imgSrc;
+                },
                 changeCredentials() {
                     // In a real app, this would update the admin credentials in the database
                     if (this.credentialsForm.currentEmail === 'admin@trendtrove.com' && 
@@ -5275,6 +5499,7 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('app', app);
         });
+
     </script>
     <style>
         .snowflake {
