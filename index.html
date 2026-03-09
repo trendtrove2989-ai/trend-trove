@@ -4974,18 +4974,96 @@
                         this.showToast('Please fill in all required fields', 'error');
                         return;
                     }
-
+                
                     const confirmButton = event ? event.currentTarget : null;
                     if (confirmButton && !confirmButton.classList.contains('animate')) {
                         confirmButton.classList.add('animate');
                         confirmButton.disabled = true;
                     }
-
-                    // ... (Keep your existing price calculation & email logic here) ...
+                
+                    // 1. Calculate the total cost & Build HTML for the Email
+                    let totalAmount = 0;
+                    let orderHtml = '<table style="width: 100%; border-collapse: collapse; font-family: sans-serif;">';
                     
-                    // Inside your placeOrder promise chain:
+                    this.cartItems.forEach(item => {
+                        let itemPrice = item.salePrice || item.price;
+                        let qty = item.quantity || 1;
+                        totalAmount += itemPrice * qty;
+                        
+                        // Build rows for the email with Image, Name, Size, Color, and Price
+                        orderHtml += `
+                            <tr>
+                                <td style="padding: 15px 0; border-bottom: 1px solid #eaeaea; width: 80px;">
+                                    <img src="${item.frontImages[0]}" alt="${item.name}" style="width: 70px; height: 70px; object-fit: cover; border-radius: 8px;">
+                                </td>
+                                <td style="padding: 15px 10px; border-bottom: 1px solid #eaeaea;">
+                                    <h4 style="margin: 0 0 5px 0; font-size: 16px; color: #333;">${item.name}</h4>
+                                    <p style="margin: 0; color: #666; font-size: 14px;">
+                                        Size: <strong>${item.size}</strong> | Color: <strong>${item.color.name}</strong>
+                                    </p>
+                                    ${item.isCustomizable && item.customDetails ? `<p style="margin: 3px 0 0 0; font-size: 12px; color: #d4af37;">Custom Print: ${item.customDetails.printSize}</p>` : ''}
+                                </td>
+                                <td style="padding: 15px 0; border-bottom: 1px solid #eaeaea; text-align: right; font-weight: bold; color: #333;">
+                                    PKR ${itemPrice} <br><span style="font-size: 12px; color: #999; font-weight: normal;">x ${qty}</span>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    
+                    orderHtml += '</table>';
+                    totalAmount += this.shippingCost;
+                
+                    // 2. Define Database Payload
+                    const orderData = {
+                        userId: this.currentUser.id || 'guest',
+                        date: new Date().toISOString(),
+                        total: totalAmount,
+                        status: 'processing',
+                        shipping: this.checkoutForm,
+                        paymentMethod: this.paymentMethod,
+                        items: this.cartItems.map(item => ({
+                            id: item.id,
+                            name: item.name,
+                            price: item.salePrice || item.price,
+                            size: item.size,
+                            color: item.color.name,
+                            image: item.frontImages[0]
+                        }))
+                    };
+                
+                    // 3. Define EmailJS Payload (Now including order_html)
+// 3. Define EmailJS Payload (Updated to match your template)
+                    // 3. Define EmailJS Payload
+                    const emailParams = {
+                        // --- CRITICAL: Routing Variables (Fixes the "recipient empty" error) ---
+                        to_email: this.checkoutForm.email,      // Used by EmailJS to know who to send to
+                        email: this.checkoutForm.email,         // Backup in case your template uses {{email}}
+                        user_email: this.checkoutForm.email,    // Backup in case your template uses {{user_email}}
+                        
+                        // --- Customer Info ---
+                        name: this.checkoutForm.fullName,       
+                        to_name: this.checkoutForm.fullName,
+                        phone: this.checkoutForm.phone,         
+                        address: `${this.checkoutForm.address}, ${this.checkoutForm.city}, ${this.checkoutForm.province}`,
+                        
+                        // --- Product Info (Fixes the blank images/text in your screenshot) ---
+                        product_name: this.cartItems[0]?.name || '',
+                        product_image: this.cartItems[0]?.frontImages[0] || '', 
+                        size: this.cartItems[0]?.size || '',                    
+                        color: this.cartItems[0]?.color?.name || '',            
+                        
+                        // --- Pricing ---
+                        total_amount: totalAmount,
+                        shipping_cost: this.shippingCost,
+                        
+                        // --- Full HTML Backup ---
+                        order_html: orderHtml 
+                    };
+                
+                    // 4. Save to database and send emails
                     window.fs.addDoc(window.fs.collection(window.db, "orders"), orderData)
                         .then((docRef) => {
+                            emailParams.order_id = docRef.id; 
                             this.userOrders.unshift({ id: docRef.id, ...orderData });
                             return Promise.all([
                                 emailjs.send('service_nunpcrh', 'template_mpjmyxw', emailParams),
