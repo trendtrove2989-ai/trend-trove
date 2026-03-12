@@ -1627,10 +1627,9 @@
     
             function updateFluidLevel(percent) {
                 if (!waterFront || !waterBack) return;
-                // Calculate Y position (500 is empty, -50 is full)
-                const yPos = 500 - (percent * 5.5);
+                // Changed multiplier from 5.5 to 5 so 100% equals exactly 0px
+                const yPos = 500 - (percent * 5); 
                 
-                // Apply coordinates (Back wave moves slightly slower to create a parallax "slosh" effect)
                 waterFront.style.transform = `translateY(${yPos}px)`;
                 waterBack.style.transform = `translateY(${yPos + 5}px)`; 
             }
@@ -2078,9 +2077,7 @@
             </div>
         </div>
 
-        <section id="products" class="section-padding bg-cream">
-            <div class="container mx-auto px-6">
-                <div class="text-center mb-16 stagger-animation">
+
 
         <!-- Products Section -->
         <section id="products" class="section-padding bg-cream">
@@ -2090,7 +2087,7 @@
                     <p class="text-xl text-gray-600 max-w-2xl mx-auto">Discover our latest <strong>Winter Collection</strong>. From <strong>heavyweight fleece hoodies</strong> to <strong>luxury track suits</strong>, elevate your wardrobe with comfort.</p>
                 </div>
                 
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-8 stagger-animation">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 stagger-animation">
                     <template x-for="product in featuredProducts" :key="product.id">
                         <div class="product-card rounded-lg overflow-hidden hover-lift relative flex flex-col h-full" style="background:transparent; border:none; box-shadow:none;"
                             <div class="h-48 sm:h-80 overflow-hidden relative shrink-0 cursor-pointer" @click="showProductDetail(product)">
@@ -4333,17 +4330,25 @@
                     setTimeout(() => {
                         if(waterFront) {
                             waterFront.style.transition = 'transform 0.6s ease-in-out';
-                            waterFront.style.transform = `translateY(-50px)`;
+                            waterFront.style.transform = `translateY(0px)`;
                         }
                         if(waterBack) {
                             waterBack.style.transition = 'transform 0.6s ease-in-out';
-                            waterBack.style.transform = `translateY(-45px)`;
+                            waterBack.style.transform = `translateY(5px)`;
                         }
                         
                         // Wait for liquid to fill
                         setTimeout(() => {
                             this.previousPage = this.currentPage;
-                            this.currentPage = targetPage; // <-- Alpine handles the show/hide automatically via this variable!
+                            this.currentPage = targetPage; 
+                            
+                            // THE FIX: Restore the "active" class so your CSS makes the page visible!
+                            document.querySelectorAll('.page-container').forEach(page => {
+                                page.classList.remove('active');
+                                if (page.getAttribute('x-show') === `currentPage === '${targetPage}'`) {
+                                    page.classList.add('active');
+                                }
+                            });
                             
                             this.cartOpen = false;
                             this.mobileMenuOpen = false;
