@@ -24,13 +24,21 @@
     </script>
     <link rel="icon" type="image/png" href="https://i.ibb.co/JWVdpGSj/Untitled-design.png">
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Anton&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-    /* Loading Animation Styles */
+/* Loading Animation Styles */
+    /* --- HIDES THE VISUAL SCROLLBAR --- */
+    ::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, and Opera */
+    }
+    html, body {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+    }
     .transition-overlay {
         position: fixed;
         top: 0;
@@ -40,236 +48,52 @@
         z-index: 9999;
         pointer-events: none;
     }
-    .music-btn {
-        position: fixed;
-        bottom: 20px;
-        left: 20px; /* Using left so it doesn't overlap WhatsApp/Chat widgets usually on right */
-        z-index: 9999;
-        width: 40px;
-        height: 40px;
-        background: #d4af37; /* Gold */
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    }
-    .shutter {
+
+    .green-screen {
         position: absolute;
         top: 0;
-        width: 50%;
-        height: 100%;
-        background-color: #ffffff;
-        transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1);
-        display: flex;
-        align-items: center;
-    }
-
-    .shutter-left {
         left: 0;
-        transform: translateX(-100%);
-        justify-content: flex-end;
-    }
-
-    .shutter-right {
-        right: 0;
-        transform: translateX(100%);
-        justify-content: flex-start;
-    }
-
-    .logo-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 3rem;
-        width: 400px;
-        position: relative;
-    }
-
-    .split-logo {
-        display: flex;
         width: 100%;
-        position: relative;
-        justify-content: center;
+        height: 100vh;
+        background: linear-gradient(135deg, rgba(148, 198, 0, 0.7) 0%, rgba(148, 198, 0, 0.5) 100%);
+        
+        backdrop-filter: blur(120px) saturate(150%);
+        -webkit-backdrop-filter: blur(120px) saturate(150%);
+        
+        border-top: 1px solid rgba(255, 255, 255, 0.4); 
+        box-shadow: 0 -20px 40px rgba(0, 0, 0, 0.3); 
+        
+        /* DEFAULT STATE: Covering the screen instantly (no transition) */
+        transform: translateY(0);
+        filter: blur(0px);
+        pointer-events: auto; 
     }
 
-    .logo-wrapper {
-        width: 200px;
-        height: 400px;
-        position: relative;
-        overflow: hidden;
+    /* Slides the screen DOWN completely off-screen when loading is complete */
+    .transition-overlay.closing .green-screen {
+        transform: translateY(150vh); /* Pushed to 150vh to completely eliminate the glow bleed */
+        filter: blur(10px);
+        transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1), filter 0.8s ease;
     }
 
-    .shutter-left .logo-wrapper {
-        margin-right: -200px;
-    }
-
-    .shutter-right .logo-wrapper {
-        margin-left: -200px;
-    }
-
-    .logo-image {
-        width: 200px;
-        height: 400px;
-        object-fit: cover;
-    }
-    .mockup-container {
-        position: relative;
-        width: 100%;
-        max-width: 500px;
-        margin: 0 auto;
-        border-radius: 8px;
-        overflow: hidden;
-        background-color: #ffffff !important; /* Always white base */
-        transition: background-color 0.3s ease;
+    /* Snaps the screen to the bottom invisibly before sliding UP for page transitions */
+    .transition-overlay.sliding-up .green-screen {
+        transform: translateY(150vh); 
+        filter: blur(10px);
+        transition: none; 
     }
     
-    .mockup-color-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 1;
-        pointer-events: none;
-    }
-/* --- CUSTOM MOCKUP BUILDER STYLES --- */
-    .mockup-container { 
-        position: relative; 
-        width: 100%; 
-        max-width: 500px; 
-        margin: 0 auto; 
-        border-radius: 8px; 
-        overflow: hidden; 
-        background-color: #ffffff; /* Base color changes via JS */
-        transition: background-color 0.3s ease;
-    }
-    /* mix-blend-mode: multiply makes a WHITE shirt with a transparent background take on the container's background color! */
-    .mockup-base { 
-        width: 100%; 
-        display: block; 
-        mix-blend-mode: multiply; 
-        position: relative; 
-        z-index: 2; 
-        pointer-events: none; 
-    }
-    /* The constrained print area so designs don't bleed off the shirt */
-    .print-area {
-        position: absolute;
-        z-index: 3;
-        overflow: hidden;
-        border: 1px dashed rgba(212, 175, 55, 0.4); /* Subtle guide line */
-    }
-    .mockup-design { 
-        max-width: 100%;
-        max-height: 100%;
-        object-fit: contain;
-        transform-origin: center;
-        user-select: none;
-        -webkit-user-drag: none;
-    }
-    /* Printing Positions - Defines the boundaries of the print area */
-    .print-pos-a4 { top: 25%; left: 30%; width: 40%; height: 45%; }
-    .print-pos-a3 { top: 20%; left: 20%; width: 60%; height: 55%; }
-    .print-pos-pocket { top: 28%; left: 62%; width: 15%; height: 15%; }
-    .print-pos-sleeve { top: 32%; left: 82%; width: 12%; height: 15%; }
-    .loader-container {
-        position: absolute;
-        bottom: 80px;
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        opacity: 0;
-        transition: opacity 0.3s ease;
+    /* Slides the screen UP */
+    .transition-overlay.sliding-up.active .green-screen {
+        transform: translateY(0);
+        filter: blur(0px);
+        transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1), filter 0.8s ease;
     }
 
-    .loader-container.active {
-        opacity: 1;
-    }
-
-    .newtons-cradle {
-        --uib-size: 80px;
-        --uib-speed: 1.2s;
-        --uib-color: #d1c98e;
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: var(--uib-size);
-        height: var(--uib-size);
-    }
-
-    .newtons-cradle__dot {
-        position: relative;
-        display: flex;
-        align-items: center;
-        height: 100%;
-        width: 25%;
-        transform-origin: center top;
-    }
-
-    .newtons-cradle__dot::after {
-        content: '';
-        display: block;
-        width: 100%;
-        height: 25%;
-        border-radius: 50%;
-        background-color: var(--uib-color);
-    }
-
-    .newtons-cradle__dot:first-child {
-        animation: swing var(--uib-speed) linear infinite;
-    }
-
-    .newtons-cradle__dot:last-child {
-        animation: swing2 var(--uib-speed) linear infinite;
-    }
-
-    @keyframes swing {
-        0% {
-            transform: rotate(0deg);
-            animation-timing-function: ease-out;
-        }
-        25% {
-            transform: rotate(70deg);
-            animation-timing-function: ease-in;
-        }
-        50% {
-            transform: rotate(0deg);
-            animation-timing-function: linear;
-        }
-    }
-
-    @keyframes swing2 {
-        0% {
-            transform: rotate(0deg);
-            animation-timing-function: linear;
-        }
-        50% {
-            transform: rotate(0deg);
-            animation-timing-function: ease-out;
-        }
-        75% {
-            transform: rotate(-70deg);
-            animation-timing-function: ease-in;
-        }
-    }
-
-    .transition-overlay.active .shutter-left {
-        transform: translateX(0);
-    }
-
-    .transition-overlay.active .shutter-right {
-        transform: translateX(0);
-    }
-
-    .transition-overlay.closing .shutter-left {
-        transform: translateX(-100%);
-    }
-
-    .transition-overlay.closing .shutter-right {
-        transform: translateX(100%);
+    /* When screen is actively loading (green screen comes up and clears blur) */
+    .transition-overlay.active .green-screen {
+        transform: translateY(0);
+        filter: blur(0px);
     }
 
     /* Page visibility control */
@@ -283,42 +107,7 @@
 
 /* REPLACE your existing @media (max-width: 768px) and (max-width: 480px) with this: */
     @media (max-width: 768px) {
-        .logo-container {
-            width: auto; /* Allow container to shrink to content */
-            gap: 0;      /* Remove gap to ensure perfect seam */
-        }
-        
-        .logo-wrapper {
-            /* Fixed dimensions ensure stability on all mobile screens */
-            width: 120px; 
-            height: 240px;
-            max-width: none;
-            max-height: none;
-        }
-        
-        /* THE FIX: Set margins to 0 so images stop exactly at the center seam */
-        .shutter-left .logo-wrapper {
-            margin-right: 0;
-        }
-        
-        .shutter-right .logo-wrapper {
-            margin-left: 0;
-        }
-        
-        .logo-image {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-        
-        .newtons-cradle {
-            --uib-size: 50px;
-        }
-        
-        .loader-container {
-            bottom: 15%; /* Adjusted for better mobile positioning */
-        }
-        
+
         /* Adjust Hero section specifically for mobile to prevent navbar overlap */
         .hero-height {
             height: 100vh;
@@ -358,17 +147,17 @@
     } 
     
     :root {
-        --primary: #1a1a1a;
-        --accent: #d4af37;
-        --background: #fffef8;
-        --text-heading: #2c2c2c;
-        --text-description: #555555;
+        --primary: #0a0a0a;
+        --accent: #c6ff34;
+        --background: #0d0d0d;
+        --text-heading: #ffffff;
+        --text-description: #b0b0b0;
         --text-light: #ffffff;
-        --text-muted: #777777;
-        --text-gold: #d4af37;
-        --highlight: #f8f9fa;
-        --card-bg: #ffffff;
-        --border-light: #eaeaea;
+        --text-muted: #666666;
+        --text-gold: #c6ff34;
+        --highlight: #141414;
+        --card-bg: #111111;
+        --border-light: #222222;
     }
     
     * {
@@ -416,7 +205,9 @@
         line-height: 1.6;
         padding-top: 80px;
     }
-    
+    .bg-cream, .bg-highlight, .min-h-screen {
+        background-color: #0a0a0a !important;
+    }
     /* ... (ALL YOUR EXISTING CSS STYLES REMAIN THE SAME) ... */
     
     /* Keep all your existing CSS below this point */
@@ -436,10 +227,10 @@
     .cart-button {
         position: relative;
         padding: 10px;
-        height: 56px; 
-        border: 0;
+        height: 56px;
+        border: 2px solid #c6ff34;
         border-radius: 6px;
-        background-color: var(--primary);
+        background-color: #111111;
         outline: none;
         cursor: pointer;
         color: #fff;
@@ -634,34 +425,24 @@
         opacity: 1;
         transform: translateY(0);
     }
-    
-    /* Replace with this */
+/* Makes the header consistently blurred at all times */
     .sticky-nav {
         position: fixed;
         top: 0;
         width: 100%;
         z-index: 1000;
-        background: transparent; /* Start transparent */
-        transition: all 0.3s ease;
+        background: rgba(10, 10, 10, 0.5) !important; /* Semi-transparent dark background */
+        backdrop-filter: blur(20px) saturate(150%) !important; /* The blur effect */
+        -webkit-backdrop-filter: blur(20px) saturate(150%) !important; /* For Safari/iOS */
+        transition: all 0.3s ease; 
         height: 80px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
-    
-    /* Replace your existing .sticky-nav.scrolled block with this */
+
+    /* Makes it slightly darker and casts a shadow when scrolling down */
     .sticky-nav.scrolled {
-        background: rgba(255, 255, 255, 0.95) !important;
-        backdrop-filter: blur(10px);
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-    }
-
-    /* Add these two new blocks right below it */
-    /* Turns the text/icons black when the header becomes white */
-    .sticky-nav.scrolled .text-white {
-        color: var(--primary) !important; 
-    }
-
-    /* Ensures the gold hover effect still works on the black text/icons */
-    .sticky-nav.scrolled .text-white:hover {
-        color: var(--accent) !important;
+        background: rgba(10, 10, 10, 0.92) !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8) !important;
     }
     
     .logo {
@@ -854,17 +635,19 @@
     .size-option {
         display: inline-block;
         padding: 10px 15px;
-        border: 1px solid #e0e0e0;
+        border: 2px solid #cbff34;
         margin: 5px;
         cursor: pointer;
         transition: all 0.3s ease;
         border-radius: 5px;
+        background-color: #cbff77;
+        color: #ffffff;
     }
     
     .size-option:hover, .size-option.active {
-        background: var(--primary);
-        color: white;
-        border-color: var(--primary);
+        background: #c6ff34;
+        color: #cbff77;
+        border-color: #c6ff34;
         transform: scale(1.05);
     }
     
@@ -1581,7 +1364,48 @@
         font-weight: bold;
         text-shadow: 0 0 2px rgba(0,0,0,0.5);
     }
+    /* --- Infinite Scrolling Marquee --- */
+    /* --- Infinite Scrolling Marquee --- */
+    .marquee-container {
+        width: 100%;
+        overflow: hidden;
+        background-color: var(--accent);
+        color: var(--primary);
+        padding: 6px 0; 
+        margin-top: 8vh; /* This pushes the tape down exactly below the visible screen */
+        display: flex;
+        white-space: nowrap;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        position: relative;
+        z-index: 20;
+    }
     
+    .marquee-content {
+        display: flex;
+        align-items: center;
+        animation: scroll-marquee 15s linear infinite;
+    }
+    
+    .marquee-content span {
+        font-family: 'Inter', sans-serif;
+        font-weight: 800;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        margin: 0 40px; 
+        font-size: 0.75rem; /* SMALLER TEXT TO MATCH THINNER BAR */
+    }
+    
+    .marquee-star {
+        font-size: 0.9rem !important; /* SMALLER STAR */
+        color: var(--primary);
+        margin: 0 !important; 
+    }
+    
+    @keyframes scroll-marquee {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); } 
+    }
     /* Mobile Responsiveness Improvements */
     @media (max-width: 768px) {
         body {
@@ -1737,37 +1561,146 @@
                ]
            }
 </script>
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
 </head>
 <body x-data="app()">
-    <div class="transition-overlay active">
-        <div class="shutter shutter-left">
-            <div class="logo-container">
-                <div class="split-logo">
-                    <div class="logo-wrapper">
-                        <img class="logo-image" src="https://i.postimg.cc/c1jC3WGV/1.png" alt="TrendTrove Logo Left">
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="shutter shutter-right">
-            <div class="logo-container">
-                <div class="split-logo">
-                    <div class="logo-wrapper">
-                        <img class="logo-image" src="https://i.postimg.cc/Vk4ddCs1/2.png" alt="TrendTrove Logo Right">
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="loader-container active">
-            <div class="newtons-cradle">
-                <div class="newtons-cradle__dot"></div>
-                <div class="newtons-cradle__dot"></div>
-                <div class="newtons-cradle__dot"></div>
-                <div class="newtons-cradle__dot"></div>
+    <!-- Persistent Starfield -->
+    <canvas id="globalStarCanvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; pointer-events:none; background:#0a0a0a;"></canvas>
+    
+    <div class="transition-overlay">
+        <div class="green-screen flex items-center justify-center">
+            <div class="logo-wrapper" style="width: 400px; max-width: 80%;">
+                <svg viewBox="0 0 725 481" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <mask id="logo-mask">
+                            <g fill="#ffffff">
+                                <path d="M0 0 C3.1755459 4.16855048 2.86550446 8.98738856 2.6640625 14.0234375 C1.0236305 25.17362022 -6.36210085 34.59893858 -15.08984375 41.41796875 C-18.76879361 43.86375106 -20.30400128 44.6875 -24.875 44.6875 C-23.30428054 41.09248434 -21.09496691 38.41687284 -18.5625 35.4375 C-12.15095269 27.68591869 -7.54384978 21.26452287 -6.5 11 C-6.59393847 7.63440901 -6.59393847 7.63440901 -8.6875 5.3125 C-19.71780877 -2.88144366 -46.9747257 3.68292089 -59.75 4.625 C-62.32548291 4.80977419 -64.9010036 4.9940225 -67.4765625 5.17773438 C-76.14226978 5.79650181 -76.14226978 5.79650181 -84.80511475 6.45358276 C-86.88246121 6.61187114 -88.96130616 6.75142438 -91.04107666 6.87380981 C-92.02928406 6.94066986 -93.01749146 7.00752991 -94.03564453 7.07641602 C-94.9122171 7.12854752 -95.78878967 7.18067902 -96.69192505 7.23439026 C-99.2250788 7.52933744 -99.2250788 7.52933744 -101.25 10.4375 C-101.78625 11.51 -102.3225 12.5825 -102.875 13.6875 C-111.77360122 23.82201805 -124.83909526 27.80874503 -137.875 29.6875 C-153.36568993 30.57955613 -169.34396325 30.49963642 -184.20703125 25.5859375 C-191.95197112 23.68888088 -199.76027267 24.70823376 -207.5625 25.875 C-208.45243652 26.00592041 -209.34237305 26.13684082 -210.25927734 26.27172852 C-217.21814755 27.34116004 -224.1138458 28.66160059 -231 30.125 C-231.92256592 30.31795654 -232.84513184 30.51091309 -233.7956543 30.7097168 C-244.60054747 32.64579959 -244.60054747 32.64579959 -253.875 37.6875 C-254.54877323 46.17704264 -252.61474711 52.73904092 -247.75 59.75 C-244.7617692 62.83783849 -242.63331965 62.85318727 -238.41650391 62.92773438 C-230.30831977 62.96228875 -222.52381707 62.37784271 -214.5 61.1875 C-197.22078882 58.65585654 -197.22078882 58.65585654 -191.875 59.6875 C-188.90138914 61.90313162 -187.50540207 63.42669585 -185.875 66.6875 C-185.79921722 68.53536107 -185.78876182 70.38604881 -185.80908203 72.23535156 C-185.82371994 73.97791229 -185.82371994 73.97791229 -185.83865356 75.75567627 C-185.85322601 77.01708435 -185.86779846 78.27849243 -185.8828125 79.578125 C-185.895846 81.55303082 -185.90886147 83.52793696 -185.92082024 85.50284958 C-185.9513637 90.38109219 -185.99125331 95.25917943 -186.04638672 100.13720703 C-186.07682152 102.87059295 -186.09918368 105.60381975 -186.11276245 108.33734131 C-186.12590782 110.91283269 -186.15097819 113.48829689 -186.1892395 116.0635376 C-186.19269379 117.23785339 -186.19614807 118.41216919 -186.19970703 119.62207031 C-186.20938507 120.6508429 -186.21906311 121.67961548 -186.22903442 122.73956299 C-185.81074654 126.22251906 -184.52826408 128.61951487 -182.875 131.6875 C-182.875 132.3475 -182.875 133.0075 -182.875 133.6875 C-161.75064128 141.47015848 -138.76843047 142.06160836 -116.49707031 142.05810547 C-113.34908112 142.06253648 -110.20243624 142.09921076 -107.0546875 142.13671875 C-90.39945247 142.49937084 -90.39945247 142.49937084 -75.14916992 136.53540039 C-73.14307439 133.62600452 -72.81338383 130.37834161 -72.26953125 126.95703125 C-72.07613411 125.83140022 -72.07613411 125.83140022 -71.87882996 124.68302917 C-71.47041561 122.29043877 -71.07877474 119.89544688 -70.6875 117.5 C-70.41321099 115.87546466 -70.13783308 114.25111277 -69.86132812 112.62695312 C-69.18657422 108.64915224 -68.52684768 104.66911595 -67.875 100.6875 C-70.50050296 101.66533539 -73.12541505 102.6447063 -75.75 103.625 C-76.49636719 103.90279297 -77.24273437 104.18058594 -78.01171875 104.46679688 C-82.00224515 105.93849194 -82.00224515 105.93849194 -85.875 107.6875 C-87.87460012 107.727492 -89.87547242 107.73096799 -91.875 107.6875 C-91.58447266 105.81469727 -91.58447266 105.81469727 -90.875 103.6875 C-88.33463271 102.14492266 -85.93141464 100.86533351 -83.25 99.625 C-82.55003906 99.28662109 -81.85007812 98.94824219 -81.12890625 98.59960938 C-79.0545446 97.60476246 -76.96881581 96.64064007 -74.875 95.6875 C-73.89515137 95.23528076 -73.89515137 95.23528076 -72.89550781 94.77392578 C-70.03668673 93.49189266 -68.04574443 92.6875 -64.875 92.6875 C-64.80023438 92.01847656 -64.72546875 91.34945312 -64.6484375 90.66015625 C-63.74729405 84.07827514 -62.16074364 77.94961778 -60 71.6875 C-59.75556152 70.95797119 -59.51112305 70.22844238 -59.25927734 69.47680664 C-57.79781827 65.38918442 -56.45047162 62.38115974 -52.875 59.6875 C-47.01189095 58.96746906 -47.01189095 58.96746906 -44 60.875 C-41.19099626 65.40061714 -41.75269452 70.85212801 -41.8125 76 C-41.81701172 76.74056641 -41.82152344 77.48113281 -41.82617188 78.24414062 C-41.83787825 80.05862899 -41.85581102 81.87307534 -41.875 83.6875 C-40.94558594 83.39875 -40.01617187 83.11 -39.05859375 82.8125 C-37.82238281 82.44125 -36.58617187 82.07 -35.3125 81.6875 C-34.09433594 81.31625 -32.87617188 80.945 -31.62109375 80.5625 C-27.89576651 79.69235057 -24.68434051 79.53061596 -20.875 79.6875 C-20.875 81.0075 -20.875 82.3275 -20.875 83.6875 C-21.48085938 83.85765625 -22.08671875 84.0278125 -22.7109375 84.203125 C-28.24175048 85.80280629 -33.53971796 87.67718306 -38.84375 89.91796875 C-40.875 90.6875 -40.875 90.6875 -42.875 90.6875 C-43.00455078 91.72583984 -43.00455078 91.72583984 -43.13671875 92.78515625 C-45.57618234 109.77187977 -52.37901193 125.44351789 -61.875 139.6875 C-62.77175525 149.40040753 -62.39199371 158.41200943 -56.875 166.6875 C-52.88318355 170.67931645 -47.6283713 169.99363865 -42.33886719 170.00439453 C-30.74494212 169.79505259 -20.93083983 165.1230891 -10.875 159.6875 C-13.84738095 166.99060804 -22.20418605 170.58625055 -29.0625 173.5625 C-37.8774581 177.2042474 -50.684757 179.23190333 -59.70703125 175.5234375 C-67.55682716 170.44645507 -70.90597064 164.69062767 -72.875 155.6875 C-73.34598646 152.35889377 -73.66799562 149.04239857 -73.875 145.6875 C-74.42027344 145.88085938 -74.96554687 146.07421875 -75.52734375 146.2734375 C-76.28144531 146.53382813 -77.03554688 146.79421875 -77.8125 147.0625 C-78.54339844 147.31773437 -79.27429688 147.57296875 -80.02734375 147.8359375 C-87.79686469 150.15933334 -95.00098258 151.00394342 -103.109375 151.0234375 C-104.1733551 151.03168045 -105.23733521 151.0399234 -106.33355713 151.04841614 C-109.76417562 151.06756669 -113.19433626 151.06761513 -116.625 151.0625 C-118.37393555 151.06317978 -118.37393555 151.06317978 -120.15820312 151.06387329 C-176.36136954 150.99952221 -176.36136954 150.99952221 -191.875 139.6875 C-200.68413273 129.68794393 -198.00513462 113.8697201 -197.4375 101.55078125 C-197.39310791 100.54532761 -197.34871582 99.53987396 -197.30297852 98.50395203 C-197.16258779 95.33586206 -197.01885439 92.16793438 -196.875 89 C-196.7784234 86.83399428 -196.68206725 84.66797872 -196.5859375 82.50195312 C-196.35150337 77.23035244 -196.11433491 71.95888034 -195.875 66.6875 C-196.91237305 66.99993652 -197.94974609 67.31237305 -199.01855469 67.63427734 C-211.88241578 71.14748934 -226.19588126 71.91494098 -239.5 72.1875 C-240.60649902 72.23318115 -240.60649902 72.23318115 -241.73535156 72.27978516 C-247.49920325 72.2837749 -251.44959257 70.33839744 -255.875 66.6875 C-257.86328125 64.2578125 -257.86328125 64.2578125 -259.1875 61.8125 C-259.661875 60.94496094 -260.13625 60.07742187 -260.625 59.18359375 C-263.94503565 52.55389757 -265.9876174 46.67783739 -266.1875 39.1875 C-266.22488281 38.2696875 -266.26226562 37.351875 -266.30078125 36.40625 C-265.73585818 32.79903478 -264.45088571 31.24151911 -261.875 28.6875 C-243.44967986 19.25770653 -203.02509919 11.73540886 -182.75 17.58984375 C-181.079375 18.13318359 -181.079375 18.13318359 -179.375 18.6875 C-157.66434229 25.06628716 -133.71904821 21.45516087 -113.765625 11.6640625 C-109.27092837 8.59066183 -107.22602746 4.46294406 -104.875 -0.3125 C-103.74795654 -0.29346619 -103.74795654 -0.29346619 -102.59814453 -0.27404785 C-94.33881807 -0.1972242 -86.16478407 -0.60576634 -77.93414307 -1.23847961 C-75.68672217 -1.41111055 -73.43890969 -1.57753167 -71.19091797 -1.74255371 C-66.4185451 -2.09393043 -61.64673898 -2.45263035 -56.875 -2.8125 C-51.3353237 -3.23028509 -45.79544444 -3.64486929 -40.25494385 -4.05158997 C-38.06532066 -4.21390775 -35.87618283 -4.38188296 -33.68701172 -4.5501709 C-8.04600963 -6.47179035 -8.04600963 -6.47179035 0 0 Z " transform="translate(363.875,169.3125)"/>
+                                <path d="M0 0 C3.49191154 2.41747722 4.63559049 5.06286917 6 9 C9.33792405 35.26989579 -7.37322799 66.12533009 -20.69580078 87.65380859 C-21.50960205 88.97952881 -21.50960205 88.97952881 -22.33984375 90.33203125 C-22.82831787 91.11296143 -23.31679199 91.8938916 -23.82006836 92.69848633 C-25.98960276 96.930268 -26.28927994 100.22929333 -24.9375 104.75 C-21.80003556 114.20460136 -16.81844471 120.34374142 -8 125 C-3.47452243 127.10199778 1.04018352 128.38002294 6 129 C6 129.66 6 130.32 6 131 C-5.08337391 131.78543595 -14.86492853 129.29855311 -23.95703125 122.7734375 C-29.00657937 118.39008216 -33.05216825 113.7414533 -34 107 C-34.64324219 107.58007812 -35.28648437 108.16015625 -35.94921875 108.7578125 C-49.69871605 120.64396851 -64.31127985 124.85609991 -82.29296875 124.3046875 C-90.42237202 123.63651737 -95.6789937 120.23659453 -101.20703125 114.35546875 C-105.09287251 109.25054004 -107.61259199 103.25063819 -109 97 C-117.53458268 100.774554 -121.56053961 109.41755606 -125.6171875 117.33984375 C-127 120 -127 120 -128 121 C-130.4375 121.1875 -130.4375 121.1875 -133 121 C-135.91615976 118.08384024 -135.54943624 114.80169764 -135.875 110.875 C-136.51010758 104.44857247 -137.34759174 99.4786124 -141 94 C-141.99 93.505 -141.99 93.505 -143 93 C-143.26683594 93.88171875 -143.53367187 94.7634375 -143.80859375 95.671875 C-148.46522385 108.67990401 -158.68170969 119.95706513 -171 126 C-176.14179021 128.26238769 -181.58359234 129.2590347 -186.9609375 127.27734375 C-191.01433818 125.16512863 -193.08881848 123.08122623 -195 119 C-195.55524026 116.13107895 -195.73569531 113.29044823 -195.875 110.375 C-195.93429687 109.611875 -195.99359375 108.84875 -196.0546875 108.0625 C-196.36815149 102.47892273 -196.36815149 102.47892273 -194.67578125 100.27734375 C-193.84626953 99.64505859 -193.84626953 99.64505859 -193 99 C-192.07404096 97.41303185 -191.18062084 95.80683142 -190.3125 94.1875 C-187.34080117 89.2128179 -184.40489677 85.37333374 -179 83 C-173.82268982 82.05733186 -168.92443098 81.98786111 -164.375 84.875 C-161.14715846 87.76306875 -161.03951466 88.39740147 -160.75 92.8125 C-160.8566693 97.75484431 -162.27380815 100.28875353 -165.8046875 103.7890625 C-172.57429509 109.99666494 -176.90281004 111.27155791 -186 111 C-185.34 113.97 -184.68 116.94 -184 120 C-179.95327602 121.39106137 -177.06922874 120.77138029 -173.16796875 119.1171875 C-160.40443347 112.53994229 -153.6059069 100.33927353 -148.19140625 87.58203125 C-147 85 -147 85 -145 83 C-141.73872833 82.30115607 -139.78140776 82.51402051 -136.93359375 84.28515625 C-132.12317401 88.17424329 -129.26362912 91.89884122 -128 98 C-127.8125 101 -127.8125 101 -128 103 C-127.34 103 -126.68 103 -126 103 C-125.74992187 102.43410156 -125.49984375 101.86820312 -125.2421875 101.28515625 C-123.81445926 98.65867505 -122.11999649 96.66210929 -120.125 94.4375 C-119.44695312 93.67308594 -118.76890625 92.90867187 -118.0703125 92.12109375 C-115.17489083 89.1546523 -113.22102792 87.18185522 -109.0625 86.5625 C-105.10204369 87.12827947 -103.81522989 88.14957973 -101 91 C-99.65860024 93.88869218 -98.80047059 96.87653592 -97.9375 99.9375 C-96.02277236 106.58273121 -94.41095891 111.72602739 -88.375 115.75 C-83.94827137 117.38952912 -79.68807443 117.73131589 -75 118 C-75.33 117.01 -75.66 116.02 -76 115 C-77.01101137 107.80737627 -75.26568073 102.7898688 -71 97 C-62.78190779 87.52885215 -62.78190779 87.52885215 -56.59765625 86.6640625 C-52.58034219 86.60216244 -49.61299849 86.74254063 -45.875 88.3125 C-42.87708589 92.60951022 -43.17434902 96.93649443 -44 102 C-45.08977213 104.45549514 -46.22211145 105.94431636 -48 108 C-46.8944811 107.06409496 -45.79064547 106.12620142 -44.6875 105.1875 C-44.07261719 104.66542969 -43.45773437 104.14335937 -42.82421875 103.60546875 C-42.22222656 103.07566406 -41.62023437 102.54585938 -41 102 C-40.47575439 101.60997803 -39.95150879 101.21995605 -39.41137695 100.81811523 C-37.27686576 98.068469 -37.61380047 95.7456214 -37.59375 92.3046875 C-37.57402397 90.94360161 -37.55416202 89.58251769 -37.53417969 88.22143555 C-37.52914429 87.51127289 -37.52410889 86.80111023 -37.5189209 86.06942749 C-37.41303927 73.78937916 -36.9253501 61.97942953 -34 50 C-33.72881348 48.85168701 -33.72881348 48.85168701 -33.45214844 47.68017578 C-29.41462655 30.71786556 -24.8683134 12.68798578 -11 1 C-7.54430561 -0.72784719 -3.77878001 -0.48497711 0 0 Z " transform="translate(581,184)"/>
+                                <path d="M0 0 C0.495 1.98 0.495 1.98 1 4 C0.40832031 4.44730469 -0.18335938 4.89460938 -0.79296875 5.35546875 C-11.86230302 13.82450263 -20.47864297 23.17031289 -24 37 C-24.33475535 39.61550606 -24.55510204 42.17334932 -24.62890625 44.80859375 C-25.10031671 47.5923966 -26.06110461 48.97007665 -28 51 C-31.0625 51.4375 -31.0625 51.4375 -34 51 C-36.469315 47.29602751 -36.35392593 44.28826533 -36 40 C-35.835 39.39285156 -35.67 38.78570312 -35.5 38.16015625 C-34.81737731 35.21101289 -34.82956414 32.39876566 -34.8125 29.375 C-34.79123047 27.65410156 -34.79123047 27.65410156 -34.76953125 25.8984375 C-34.69470342 22.87274099 -34.69470342 22.87274099 -37 21 C-38.91180549 20.71994942 -38.91180549 20.71994942 -41 20.8125 C-41.70125 20.81894531 -42.4025 20.82539063 -43.125 20.83203125 C-45.09056373 20.89293867 -45.09056373 20.89293867 -47 22 C-49.3329866 22.04022391 -51.66706666 22.04320247 -54 22 C-54.33 20.68 -54.66 19.36 -55 18 C-49.56568727 13.32045293 -45.58336766 12.64848342 -38.546875 12.7109375 C-34.51275567 13.16879767 -32.24570407 14.58298633 -29 17 C-28.67 17.99 -28.34 18.98 -28 20 C-27.34 20 -26.68 20 -26 20 C-25.814375 19.34 -25.62875 18.68 -25.4375 18 C-21.24558616 9.25165806 -10.22046925 -2.42063745 0 0 Z " transform="translate(383,269)"/>
+                                <path d="M0 0 C3.00391169 4.50586753 2.81610087 8.72348574 2 14 C-0.28942525 18.98024324 -3.32818164 23.05712229 -8 26 C-8.99 26 -9.98 26 -11 26 C-11.37005772 21.68265992 -10.35225203 19.57542309 -8 16 C-7.06750386 13.20251159 -6.86523848 11.45679119 -6.875 8.5625 C-6.87113281 7.41974609 -6.87113281 7.41974609 -6.8671875 6.25390625 C-6.99723985 4.04684141 -7.39143801 2.12030724 -8 0 C-5.06791253 -1.46604374 -3.11702298 -0.77925574 0 0 Z " transform="translate(345,180)"/>
+                                <path d="M0 0 C0 0.99 0 1.98 0 3 C-5.34883721 8 -5.34883721 8 -8 8 C-8.33 7.01 -8.66 6.02 -9 5 C-6.03 3.35 -3.06 1.7 0 0 Z " transform="translate(352,329)"/>
+                            </g>
+                            <g fill="#000000">
+                                <path d="M0 0 C3 1 3 1 4 3 C4.68276359 9.11861215 3.78986077 15.10970056 2.6875 21.125 C2.51105957 22.10944092 2.51105957 22.10944092 2.33105469 23.11376953 C1.38338692 27.96965795 -0.13239415 32.42537982 -2 37 C-2.32605225 37.79889648 -2.65210449 38.59779297 -2.98803711 39.42089844 C-8.54476442 52.84486914 -14.1590904 66.33691079 -23 78 C-23.33 78 -23.66 78 -24 78 C-24.16455126 71.15009687 -23.7579122 64.58716884 -22.75 57.8125 C-22.61505127 56.89831299 -22.48010254 55.98412598 -22.34106445 55.04223633 C-19.60386459 37.35511769 -14.30011357 12.1971557 0 0 Z " transform="translate(577,192)"/>
+                                <path d="M0 0 C-0.67889046 5.83845797 -2.10571905 9.40847069 -6.6640625 13.23828125 C-7.64117188 13.92277344 -8.61828125 14.60726563 -9.625 15.3125 C-10.60726562 16.00988281 -11.58953125 16.70726562 -12.6015625 17.42578125 C-15 19 -15 19 -16 19 C-16.64817885 14.67880767 -15.87435449 12.36760369 -13.375 8.9375 C-6.10148752 0 -6.10148752 0 0 0 Z " transform="translate(530,279)"/>
+                                <path d="M0 0 C0.4375 2.125 0.4375 2.125 0 5 C-3.25173577 8.75694895 -7.18177485 11.66160412 -12 13 C-12.99 13 -13.98 13 -15 13 C-14.47616397 8.89542181 -13.34834816 6.78489488 -10.5625 3.75 C-9.94503906 3.06421875 -9.32757813 2.3784375 -8.69140625 1.671875 C-5.61950383 -1.36455511 -4.0433203 -0.95762849 0 0 Z " transform="translate(413,275)"/>
+                                <path d="M0 0 C-1.10741798 9.40175268 -5.06123461 17.51164464 -9 26 C-9.33 26 -9.66 26 -10 26 C-8.84583566 8.59641662 -8.84583566 8.59641662 -7 3 C-4.49215848 0.80563867 -3.30390484 0 0 0 Z " transform="translate(314,263)"/>
+                                <path d="M0 0 C0.66 0 1.32 0 2 0 C2 4.29 2 8.58 2 13 C0.02 13.33 -1.96 13.66 -4 14 C-3.00956295 9.16371695 -2.04301154 4.52381127 0 0 Z " transform="translate(314,243)"/>
+                            </g>
+                        </mask>
+                    </defs>
+                    
+                    <rect width="725" height="481" fill="#ffffff" mask="url(#logo-mask)" />
+                
+                    <g mask="url(#logo-mask)">
+                        <g id="water-level-back" style="transform: translateY(500px); opacity: 0.4;">
+                            <path fill="#000000" d="M -600 0 Q -450 90, -300 0 T 0 0 T 300 0 T 600 0 T 900 0 T 1200 0 V 800 H -600 Z">
+                                <animateTransform attributeName="transform" type="translate" from="0 0" to="-600 0" dur="1.5s" repeatCount="indefinite" />
+                            </path>
+                        </g>
+                        <g id="water-level" style="transform: translateY(500px);">
+                            <path fill="#000000" d="M -600 0 Q -450 60, -300 0 T 0 0 T 300 0 T 600 0 T 900 0 T 1200 0 V 800 H -600 Z">
+                                <animateTransform attributeName="transform" type="translate" from="-600 0" to="0 0" dur="2.5s" repeatCount="indefinite" />
+                            </path>
+                        </g>
+                    </g>
+                </svg>
             </div>
         </div>
     </div>
+    <div class="transition-overlay">
+        </div>
+
+    <script>
+        (function() {
+            const waterFront = document.getElementById('water-level');
+            const waterBack = document.getElementById('water-level-back');
+            const overlay = document.querySelector('.transition-overlay');
+            
+            const allImages = document.querySelectorAll('img');
+            const totalImages = allImages.length;
+            
+            let imagesLoaded = 0;
+            let currentProgress = 0; 
+            let targetProgress = 10; // Initial splash
+            let isPageFullyLoaded = false;
+    
+            function updateFluidLevel(percent) {
+                if (!waterFront || !waterBack) return;
+                // Calculate Y position (500 is empty, -50 is full)
+                const yPos = 500 - (percent * 5.5);
+                
+                // Apply coordinates (Back wave moves slightly slower to create a parallax "slosh" effect)
+                waterFront.style.transform = `translateY(${yPos}px)`;
+                waterBack.style.transform = `translateY(${yPos + 5}px)`; 
+            }
+    
+            function trackAssets() {
+                imagesLoaded++;
+                if (!isPageFullyLoaded) {
+                    targetProgress = 10 + (imagesLoaded / totalImages) * 80;
+                }
+            }
+    
+            if (totalImages === 0) {
+                targetProgress = 90;
+            } else {
+                allImages.forEach(img => {
+                    if (img.complete) trackAssets();
+                    else {
+                        img.addEventListener('load', trackAssets);
+                        img.addEventListener('error', trackAssets);
+                    }
+                });
+            }
+    
+            function render() {
+                // Once the browser finishes loading, set our ultimate goal to 100
+                if (isPageFullyLoaded) {
+                    targetProgress = 100;
+                }
+    
+                let diff = targetProgress - currentProgress;
+                
+                // THE FIX: Enforce a slow, smooth crawl. 
+                // We cap the maximum speed (0.4) so it NEVER snaps instantly, 
+                // and keep a minimum speed (0.15) so it never stalls.
+                let moveSpeed = Math.min((diff * 0.015) + 0.15, 0.4); 
+    
+                if (currentProgress < targetProgress) {
+                    currentProgress += moveSpeed;
+                }
+    
+                updateFluidLevel(currentProgress);
+    
+                // Wait until it visually hits 99.5%
+                if (currentProgress < 99.5) {
+                    requestAnimationFrame(render);
+                } else {
+                    // Hard finish to 100% to ensure the logo is fully black
+                    updateFluidLevel(100);
+                    
+                    // Exactly 1 second delay AFTER it fills, then slide down
+                    setTimeout(() => {
+                        overlay.classList.add('closing');
+                        const audio = document.getElementById('bgMusic');
+                        if(audio) {
+                            audio.volume = 0.1;
+                            audio.play().catch(() => {});
+                        }
+                    }, 1000);
+                }
+            }
+    
+            // Start animation
+            requestAnimationFrame(render);
+    
+            window.addEventListener('load', () => {
+                isPageFullyLoaded = true;
+            });
+        })();
+    </script>
+
     <!-- Loading Bar -->
     <div class="loading-bar" id="loadingBar"></div>
     
@@ -1842,142 +1775,77 @@
         </div>
     </div>
     
-    <!-- Navigation -->
     <nav class="sticky-nav py-4" id="navbar" :class="isAdmin ? 'mt-10' : ''" style="margin-top: 0;">
         <div class="container mx-auto px-4 flex justify-between items-center">
-            
-            <a href="https://trend-trove.pages.dev" class="logo animate-pulse-slow flex items-center hover:opacity-80 transition-opacity text-white shrink-0">
-                <span class="text-white">T</span>rend<span class="text-white">T</span>rove
+    
+            <!-- LOGO -->
+            <a href="https://trend-trove.pages.dev" class="flex items-center hover:opacity-80 transition-opacity shrink-0" style="font-family:'Cormorant Garamond',serif; font-weight:700; letter-spacing:1px; white-space:nowrap; font-size:clamp(0.85rem, 2.8vw, 1.4rem);">
+                <span style="color:#c6ff34;">TREND</span><span style="color:#ffffff;">TROVE</span>
             </a>
-            
-            <div class="hidden md:flex space-x-8">
-                <a href="#" @click.prevent="showHomePage()" class="nav-link text-white hover-lift">Home</a>
-                <a href="#" @click.prevent="showAllProductsPage()" class="nav-link text-white hover-lift">All Products</a>
-                <a href="#" @click.prevent="showAllCollectionsPage()" class="nav-link text-white hover-lift">Collections</a>
-                <template x-for="category in categories" :key="category.id">
-                    <a href="#" @click.prevent="showCategoryPage(category.id)" class="nav-link text-white hover-lift" x-text="category.name"></a>
-                </template>
-                <a href="#" @click.prevent="showHomePage(); setTimeout(() => document.getElementById('about').scrollIntoView({behavior:'smooth'}), 500)" class="nav-link text-white hover-lift">About</a>
-                <a href="https://wa.me/message/TY5U3IM2LB6HJ1" class="nav-link text-white hover-lift">Contact</a>
+    
+            <!-- CENTER NAV PILL -->
+            <div class="hidden md:flex items-center px-6 py-2 rounded-full space-x-6"
+                style="background: rgba(255,255,255,0.07); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 4px 24px rgba(0,0,0,0.4);">
+                <a href="#" @click.prevent="showHomePage()" class="nav-link text-sm font-semibold tracking-widest uppercase hover-lift" style="color:#ffffff; letter-spacing:0.12em;">Home</a>
+                <a href="#" @click.prevent="showAboutPage ? showAboutPage() : null" class="nav-link text-sm font-semibold tracking-widest uppercase hover-lift" style="color:#ffffff; letter-spacing:0.12em;">About</a>
+                <a href="#" @click.prevent="showAllProductsPage()" class="nav-link text-sm font-semibold tracking-widest uppercase hover-lift" style="color:#ffffff; letter-spacing:0.12em;">All Categories</a>
+                <a href="#" @click.prevent="showCustomCategory()" class="nav-link text-sm font-semibold tracking-widest uppercase hover-lift" style="color:#ffffff; letter-spacing:0.12em;">Custom</a>
+                <a href="https://wa.me/message/TY5U3IM2LB6HJ1" class="nav-link text-sm font-semibold tracking-widest uppercase hover-lift" style="color:#ffffff; letter-spacing:0.12em;">Contact</a>
             </div>
-            
-            <div class="flex items-center gap-3 sm:gap-6">
-                
-                <div class="relative" @click.outside="searchOpen = false">
-                    <button class="text-white hover:text-gold transition-colors hover-lift mt-1" @click="searchOpen = !searchOpen; if(searchOpen) $nextTick(() => $refs.searchInput.focus())">
-                        <i class="fas fa-search text-lg"></i>
-                    </button>
-                    
-                    <div x-show="searchOpen" x-transition style="display: none;" class="absolute right-0 mt-4 w-[90vw] max-w-sm rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] overflow-hidden z-50 border border-white/60 bg-white/80 backdrop-blur-lg">
-                        <div class="p-3 border-b border-white/50 flex items-center bg-white/50">
-                            <i class="fas fa-search text-gray-600 mr-3"></i>
-                            <input x-ref="searchInput" type="text" x-model="searchQuery" placeholder="Search products..." class="w-full bg-transparent border-none focus:outline-none text-gray-800 text-sm placeholder-gray-500">
-                            <button @click="searchOpen = false; searchQuery = ''" class="text-gray-500 hover:text-red-500 ml-2">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        
-                        <div class="max-h-[60vh] overflow-y-auto" x-show="searchQuery.trim() !== ''">
-                            <div x-show="searchResults.products.length === 0 && searchResults.categories.length === 0" class="p-4 text-center text-gray-700 text-sm font-medium">
-                                No results found for "<span x-text="searchQuery" class="font-bold"></span>"
-                            </div>
-                            
-                            <div x-show="searchResults.categories.length > 0" class="border-b border-white/50">
-                                <h4 class="px-4 py-2 text-xs font-bold text-gray-700 uppercase tracking-wider bg-white/40">Categories</h4>
-                                <template x-for="cat in searchResults.categories" :key="cat.id">
-                                    <a href="#" @click.prevent="showCategoryPage(cat.id); searchOpen = false; searchQuery = ''" class="flex items-center px-4 py-3 hover:bg-white/60 transition-colors">
-                                        <img :src="cat.image" class="w-10 h-10 object-cover rounded mr-3 shadow-sm">
-                                        <div>
-                                            <p class="font-bold text-gray-800 text-sm" x-text="cat.name"></p>
-                                        </div>
-                                    </a>
-                                </template>
-                            </div>
-                            
-                            <div x-show="searchResults.products.length > 0">
-                                <h4 class="px-4 py-2 text-xs font-bold text-gray-700 uppercase tracking-wider bg-white/40">Products</h4>
-                                <template x-for="prod in searchResults.products" :key="prod.id">
-                                    <a href="#" @click.prevent="showProductDetail(prod); searchOpen = false; searchQuery = ''" class="flex items-center px-4 py-3 hover:bg-white/60 transition-colors">
-                                        <img :src="prod.frontImages[0]" class="w-10 h-10 object-cover rounded mr-3 shadow-sm">
-                                        <div class="flex-1 min-w-0">
-                                            <p class="font-bold text-gray-800 text-sm truncate" x-text="prod.name"></p>
-                                            <p class="text-gold font-extrabold text-xs" x-text="'PKR ' + (prod.salePrice || prod.price)"></p>
-                                        </div>
-                                    </a>
-                                </template>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
+    
+            <!-- RIGHT ICONS -->
+            <div class="flex items-center space-x-5">
+                <button class="hover:opacity-70 transition-opacity hover-lift" style="color:#ffffff;" @click="searchOpen = true; $nextTick(() => $refs.searchInput.focus())">
+                    <i class="fas fa-search text-lg"></i>
+                </button>
+    
                 <div class="relative" x-data="{ userDropdownOpen: false }">
-                    <button class="text-white hover:text-gold transition-colors hover-lift mt-1" @click="userDropdownOpen = !userDropdownOpen">
+                    <button style="color:#ffffff;" class="hover:opacity-70 transition-opacity hover-lift" @click="userDropdownOpen = !userDropdownOpen">
                         <i class="fas fa-user text-lg"></i>
                     </button>
-                    
-                    <div x-show="userDropdownOpen" @click.outside="userDropdownOpen = false" style="display:none;" class="absolute right-0 mt-4 w-48 bg-white/80 backdrop-blur-lg border border-white/60 rounded-xl shadow-lg py-2 z-50">
+                    <div x-show="userDropdownOpen" @click.outside="userDropdownOpen = false"
+                        class="absolute right-0 mt-2 w-48 rounded-xl py-1 z-50"
+                        style="background: rgba(20,20,20,0.95); backdrop-filter: blur(16px); border: 1px solid rgba(198,255,52,0.2);">
                         <template x-if="!isLoggedIn">
                             <div>
-                                <button @click="openLoginModal(); userDropdownOpen = false" class="block px-4 py-2 text-sm text-gray-800 font-medium hover:bg-white/50 w-full text-left">
-                                    <i class="fas fa-sign-in-alt mr-2 text-gray-500"></i>Login
+                                <button @click="openLoginModal(); userDropdownOpen = false" class="block px-4 py-2 text-sm w-full text-left transition-colors" style="color:#b0b0b0;" onmouseover="this.style.color='#c6ff34'" onmouseout="this.style.color='#b0b0b0'">
+                                    <i class="fas fa-sign-in-alt mr-2"></i>Login
                                 </button>
-                                <button @click="openRegisterModal(); userDropdownOpen = false" class="block px-4 py-2 text-sm text-gray-800 font-medium hover:bg-white/50 w-full text-left">
-                                    <i class="fas fa-user-plus mr-2 text-gray-500"></i>Register
+                                <button @click="openRegisterModal(); userDropdownOpen = false" class="block px-4 py-2 text-sm w-full text-left transition-colors" style="color:#b0b0b0;" onmouseover="this.style.color='#c6ff34'" onmouseout="this.style.color='#b0b0b0'">
+                                    <i class="fas fa-user-plus mr-2"></i>Register
                                 </button>
                             </div>
                         </template>
                         <template x-if="isLoggedIn">
                             <div>
-                                <div class="px-4 py-2 text-sm text-gray-900 border-b border-white/50 font-bold bg-white/40">
-                                    <i class="fas fa-user-circle mr-2 text-gold"></i>
+                                <div class="px-4 py-2 text-sm border-b" style="color:#c6ff34; border-color:rgba(198,255,52,0.2);">
+                                    <i class="fas fa-user-circle mr-2"></i>
                                     <span x-text="currentUser.name"></span>
                                 </div>
-                                <button @click="showUserProfile(); userDropdownOpen = false" class="block px-4 py-2 text-sm text-gray-800 font-medium hover:bg-white/50 w-full text-left mt-1">
-                                    <i class="fas fa-user mr-2 text-gray-500"></i>My Profile
+                                <button @click="showUserProfile(); userDropdownOpen = false" class="block px-4 py-2 text-sm w-full text-left" style="color:#b0b0b0;" onmouseover="this.style.color='#c6ff34'" onmouseout="this.style.color='#b0b0b0'">
+                                    <i class="fas fa-user mr-2"></i>My Profile
                                 </button>
-                                <button @click="showOrderHistory(); userDropdownOpen = false" class="block px-4 py-2 text-sm text-gray-800 font-medium hover:bg-white/50 w-full text-left">
-                                    <i class="fas fa-history mr-2 text-gray-500"></i>Order History
+                                <button @click="showOrderHistory(); userDropdownOpen = false" class="block px-4 py-2 text-sm w-full text-left" style="color:#b0b0b0;" onmouseover="this.style.color='#c6ff34'" onmouseout="this.style.color='#b0b0b0'">
+                                    <i class="fas fa-history mr-2"></i>Order History
                                 </button>
-                                <button @click="userLogout(); userDropdownOpen = false" class="block px-4 py-2 text-sm text-red-600 font-bold hover:bg-red-50 w-full text-left">
+                                <button @click="userLogout(); userDropdownOpen = false" class="block px-4 py-2 text-sm w-full text-left" style="color:#b0b0b0;" onmouseover="this.style.color='#c6ff34'" onmouseout="this.style.color='#b0b0b0'">
                                     <i class="fas fa-sign-out-alt mr-2"></i>Logout
                                 </button>
                             </div>
                         </template>
                     </div>
                 </div>
-                
-                <button class="text-white hover:text-gold transition-colors hover-lift relative mt-1" @click="cartOpen = true">
-                    <i class="fas fa-shopping-bag text-lg"></i>
-                    <span x-show="cartCount > 0" x-text="cartCount" class="absolute -top-2 -right-2 bg-gold text-primary text-xs font-bold rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center shadow-md"></span>
+    
+                <button class="relative hover:opacity-70 transition-opacity hover-lift" style="color:#ffffff;" @click="cartOpen = true">
+                    <i class="fas fa-shopping-cart text-lg"></i>
+                    <span x-show="cartCount > 0" x-text="cartCount"
+                        class="absolute -top-2 -right-2 text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold"
+                        style="background:#c6ff34; color:#0a0a0a;"></span>
                 </button>
-                
-                <button class="md:hidden text-white hover:text-gold transition-colors ml-1" @click="mobileMenuOpen = !mobileMenuOpen">
-                    <i class="fas fa-bars text-xl"></i>
+    
+                <button class="md:hidden" style="color:#ffffff;" @click="mobileMenuOpen = true">
+                    <i class="fas fa-bars text-lg"></i>
                 </button>
-            </div>
-        </div>
-
-        <div x-show="mobileMenuOpen" 
-             x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0 -translate-y-4"
-             x-transition:enter-end="opacity-100 translate-y-0"
-             x-transition:leave="transition ease-in duration-150"
-             x-transition:leave-start="opacity-100 translate-y-0"
-             x-transition:leave-end="opacity-0 -translate-y-4"
-             style="display: none;" 
-             @click.outside="mobileMenuOpen = false"
-             class="md:hidden absolute top-full left-0 w-full border-t border-white/40 bg-white/70 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.1)] z-50 pb-4">
-            <div class="flex flex-col py-4 px-6 space-y-4 max-h-[70vh] overflow-y-auto">
-                <a href="#" @click.prevent="showHomePage(); mobileMenuOpen = false" class="text-gray-900 font-bold hover:text-gold border-b border-gray-400/20 pb-2">Home</a>
-                <a href="#" @click.prevent="showAllProductsPage(); mobileMenuOpen = false" class="text-gray-900 font-bold hover:text-gold border-b border-gray-400/20 pb-2">All Products</a>
-                <a href="#" @click.prevent="showAllCollectionsPage(); mobileMenuOpen = false" class="text-gray-900 font-bold hover:text-gold border-b border-gray-400/20 pb-2">Collections</a>
-                
-                <template x-for="category in categories" :key="category.id">
-                    <a href="#" @click.prevent="showCategoryPage(category.id); mobileMenuOpen = false" class="text-gray-900 font-bold hover:text-gold border-b border-gray-400/20 pb-2" x-text="category.name"></a>
-                </template>
-                
-                <a href="#" @click.prevent="showHomePage(); setTimeout(() => document.getElementById('about').scrollIntoView({behavior:'smooth'}), 500); mobileMenuOpen = false" class="text-gray-900 font-bold hover:text-gold border-b border-gray-400/20 pb-2">About</a>
-                <a href="https://wa.me/message/TY5U3IM2LB6HJ1" class="text-gray-900 font-bold hover:text-gold pb-2">Contact</a>
             </div>
         </div>
     </nav>
@@ -1986,15 +1854,185 @@
     <!-- Home Page -->
     <div x-show="currentPage === 'home'" class="page-container active">
         <!-- Hero Section -->
-        <section class="relative w-full h-[100vh] overflow-hidden -mt-[60px] min-[480px]:-mt-[70px] md:-mt-[80px]">
-            <div class="hidden md:block absolute inset-0 w-full h-full z-0">
-                <img src="https://i.ibb.co/WNgpBQ9w/Untitled-574-x-328-px-4200-x-2400-px.png" alt="TrendTrove Premium Fashion" class="w-full h-full object-cover object-center">
-            </div>
-            
-            <div class="block md:hidden absolute inset-0 w-full h-full z-0">
-                <img src="https://i.ibb.co/1ffxP63m/Untitled-574-x-328-px-4200-x-2400-px-1599-x-2400-px.png" alt="TrendTrove Premium Fashion" class="w-full h-full object-cover object-top">
+        <section class="relative w-full overflow-hidden" style="height:100vh; background:#0a0a0a; margin-top:-80px;">
+        
+            <!-- Animated Starfield Canvas -->
+            <canvas id="starCanvas" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:0;"></canvas>
+        
+            <!-- Content -->
+            <div class="relative z-10 h-full w-full overflow-hidden flex flex-col justify-center">
+                
+                <div class="hidden md:flex container mx-auto px-4 md:px-16 flex-row items-center justify-between h-full pt-16 md:pt-20 w-full">
+                    <div class="flex-1 flex flex-col justify-center" style="max-width:520px;">
+                        <div class="flex items-center mb-6 gap-3">
+                            <div style="width:40px; height:2px; background:#c6ff34;"></div>
+                            <span style="color:#c6ff34; font-size:0.75rem; font-weight:700; letter-spacing:0.25em; text-transform:uppercase;">New Trend — 2026</span>
+                        </div>
+                        <div style="line-height:0.9;">
+                            <div style="font-family:'Arial Black', 'Impact', sans-serif; font-size:clamp(3.5rem,10vw,9rem); font-weight:900; color:#ffffff; text-transform:uppercase; letter-spacing:-2px;">WEAR</div>
+                            <div style="font-family:'Arial Black', 'Impact', sans-serif; font-size:clamp(2rem,6vw,5.5rem); font-weight:900; color:transparent; -webkit-text-stroke: 2px rgba(255,255,255,0.35); text-transform:uppercase; letter-spacing:-1px;">THE</div>
+                            <div style="font-family:'Arial Black', 'Impact', sans-serif; font-size:clamp(3.5rem,10vw,9rem); font-weight:900; color:#c6ff34; text-transform:uppercase; letter-spacing:-2px;">TREND</div>
+                        </div>
+                        <p style="color:#888888; font-size:0.95rem; margin-top:1.5rem; max-width:340px; line-height:1.6;">
+                            Trend-Trove — curated pieces for those<br>who define their own trend.
+                        </p>
+                        <div class="flex gap-4 mt-8 flex-wrap">
+                            <button @click="showAllProductsPage()" style="background:#c6ff34; color:#0a0a0a; font-weight:800; font-size:0.8rem; letter-spacing:0.15em; text-transform:uppercase; padding:14px 28px; border:none; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#d4ff66'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='#c6ff34'; this.style.transform='translateY(0)'">
+                                SHOP THE TREND
+                            </button>
+                            <button @click="showCustomCategory()" style="background:transparent; color:#ffffff; font-weight:800; font-size:0.8rem; letter-spacing:0.15em; text-transform:uppercase; padding:14px 28px; border:2px solid rgba(255,255,255,0.4); cursor:pointer; transition:all 0.2s;" onmouseover="this.style.borderColor='#c6ff34'; this.style.color='#c6ff34'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.4)'; this.style.color='#ffffff'; this.style.transform='translateY(0)'">
+                                CUSTOM TREND
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex-1 flex items-center justify-center relative right-0" style="min-height:400px; width: 100%;">
+                        <model-viewer src="oversized_t-shirt_1.glb" alt="Premium Oversized T-Shirt 3D Model" auto-rotate rotation-per-second="30deg" camera-controls disable-zoom shadow-intensity="1.5" shadow-softness="1" exposure="1.2" environment-image="neutral" style="width: 100%; height: 600px; background-color: transparent; outline: none;"></model-viewer>
+                    </div>
+                </div>
+
+                <div class="md:hidden flex flex-col w-full h-full min-h-[100vh] bg-black relative z-20 pt-[90px] pb-8 px-5 justify-between">
+                    
+                    <div class="flex flex-col items-center w-full relative z-10 pt-2">
+                        <div class="flex items-center justify-center gap-2 mb-2 w-full">
+                            <div class="h-[1px] bg-[#c6ff34]" style="width: 45px;"></div>
+                            <span class="text-[#c6ff34] text-[11px] font-medium tracking-wide">NEW TREND -2026</span>
+                        </div>
+
+                        <div class="relative flex flex-col items-center leading-[1] w-full text-center mt-3">
+                            
+                            <div style="font-family: 'Anton', sans-serif; font-size: 28vw; color: #cbff34; text-transform: uppercase; display: flex; justify-content: center; position: relative; z-index: 2; margin-bottom: 0;">
+                                <span style="position: relative; z-index: 4; text-shadow: 1vw -6vw 6vw rgba(0,0,0,1);">W</span>
+                                <span style="position: relative; z-index: 3; margin-left: -1.5vw; text-shadow: 1vw -6vw 6vw rgba(0,0,0,1);">E</span>
+                                <span style="position: relative; z-index: 2; margin-left: -1.5vw; text-shadow: 1vw -6vw 6vw rgba(0,0,0,1);">A</span>
+                                <span style="position: relative; z-index: 1; margin-left: -1.5vw; text-shadow: 1vw -6vw 6vw rgba(0,0,0,1);">R</span>
+                            </div>
+                            
+                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-8deg); font-family: 'Alex Brush', cursive; font-size: 26vw; color: #7b7c7b; text-shadow: 3vw -3vw 5vw rgba(0,0,0,0.82); z-index: 10; line-height: 1;">
+                                the
+                            </div>
+                            
+                            <div style="font-family: 'Anton', sans-serif; font-size: 21vw; color: #ffffff; text-transform: uppercase; margin-top: -1vw; position: relative; z-index: 2;">
+                                TREND
+                            </div>
+                            
+                        </div>
+                    </div>
+
+                    <div class="relative w-full flex-1 flex items-center justify-center -mt-10 z-20">
+                        <model-viewer 
+                            src="oversized_t-shirt_1.glb" 
+                            alt="Premium Oversized T-Shirt 3D Model"
+                            auto-rotate 
+                            rotation-per-second="30deg"
+                            camera-controls 
+                            disable-zoom
+                            shadow-intensity="1.5" 
+                            shadow-softness="1"
+                            exposure="1.2"
+                            environment-image="neutral"
+                            style="width: 140%; height: 350px; background-color: transparent; outline: none; margin-left: -5%;"
+                        ></model-viewer>
+                    </div>
+
+                    <div class="w-full flex flex-col z-30 relative mt-auto mb-48 pb-4">
+                        
+                        <p class="text-[#888888] text-[11px] leading-relaxed w-full max-w-[260px] mb-3" style="font-family: 'Inter', sans-serif;">
+                            Trend-Trove — curated pieces for those<br>who define their own trend.
+                        </p>
+
+                        <div class="flex flex-row gap-3 w-full">
+                            <button @click="showAllProductsPage()" 
+                                    class="flex-1 py-3 text-black font-semibold text-[11px] tracking-wider transition-opacity active:opacity-80 rounded-sm shadow-lg" 
+                                    style="background: #c6ff34; font-family: 'Inter', sans-serif;">
+                                SHOP THE TREND
+                            </button>
+                            <button @click="showCustomCategory()" 
+                                    class="flex-1 py-3 text-white font-semibold text-[11px] tracking-wider transition-opacity active:opacity-80 rounded-sm shadow-lg"
+                                    style="background: black; border: 1px solid #ffffff; font-family: 'Inter', sans-serif;">
+                                CUSTOM TREND
+                            </button>
+                        </div>
+                        
+                    </div>
+                </div>
+
             </div>
         </section>
+        
+        <!-- Starfield Script -->
+        <script>
+        (function() {
+            const canvas = document.getElementById('starCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let W, H, stars = [];
+        
+            function resize() {
+                W = canvas.width = canvas.offsetWidth;
+                H = canvas.height = canvas.offsetHeight;
+            }
+        
+            function initStars() {
+                stars = [];
+                for (let i = 0; i < 220; i++) {
+                    stars.push({
+                        x: Math.random() * W,
+                        y: Math.random() * H,
+                        r: Math.random() * 1.4 + 0.2,
+                        speed: Math.random() * 0.25 + 0.05,
+                        opacity: Math.random() * 0.7 + 0.2,
+                        twinkle: Math.random() * Math.PI * 2
+                    });
+                }
+            }
+        
+            function draw() {
+                ctx.clearRect(0, 0, W, H);
+                const now = Date.now() / 1000;
+                stars.forEach(s => {
+                    s.twinkle += 0.012;
+                    const alpha = s.opacity * (0.6 + 0.4 * Math.sin(s.twinkle));
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+                    ctx.fill();
+        
+                    s.y += s.speed;
+                    if (s.y > H) { s.y = 0; s.x = Math.random() * W; }
+                });
+                requestAnimationFrame(draw);
+            }
+        
+            window.addEventListener('resize', () => { resize(); initStars(); });
+            resize();
+            initStars();
+            draw();
+        })();
+        </script>
+
+        <div class="marquee-container">
+            <div class="marquee-content">
+                <span>WEAR THE TREND</span> <span class="marquee-star">✦</span>
+                <span>SALE</span> <span class="marquee-star">✦</span>
+                <span>LIMITED STOCK</span> <span class="marquee-star">✦</span>
+                
+                <span>WEAR THE TREND</span> <span class="marquee-star">✦</span>
+                <span>SALE</span> <span class="marquee-star">✦</span>
+                <span>LIMITED STOCK</span> <span class="marquee-star">✦</span>
+                
+                <span>WEAR THE TREND</span> <span class="marquee-star">✦</span>
+                <span>SALE</span> <span class="marquee-star">✦</span>
+                <span>LIMITED STOCK</span> <span class="marquee-star">✦</span>
+
+                <span>WEAR THE TREND</span> <span class="marquee-star">✦</span>
+                <span>SALE</span> <span class="marquee-star">✦</span>
+                <span>LIMITED STOCK</span> <span class="marquee-star">✦</span>
+            </div>
+        </div>
+
+        <section id="products" class="section-padding bg-cream">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16 stagger-animation">
 
         <!-- Products Section -->
         <section id="products" class="section-padding bg-cream">
@@ -2006,8 +2044,8 @@
                 
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-8 stagger-animation">
                     <template x-for="product in featuredProducts" :key="product.id">
-                        <div class="product-card bg-white premium-shadow rounded-lg overflow-hidden hover-lift relative flex flex-col h-full">
-                            <div class="h-48 sm:h-80 overflow-hidden relative shrink-0">
+                        <div class="product-card rounded-lg overflow-hidden hover-lift relative flex flex-col h-full" style="background:transparent; border:none; box-shadow:none;"
+                            <div class="h-48 sm:h-80 overflow-hidden relative shrink-0 cursor-pointer" @click="showProductDetail(product)">
                                 <img :src="product.frontImages[0]" :alt="product.name" class="w-full h-full object-cover product-image">
                                 
                                 <template x-if="product.salePrice">
@@ -2017,23 +2055,23 @@
                                 </template>
                             </div>
 
-                            <div class="p-3 sm:p-6 flex-1 flex flex-col">
-                                <h3 class="text-sm sm:text-xl font-semibold mb-1 truncate" x-text="product.name"></h3>
-                                <p class="text-gray-600 text-xs sm:text-sm mb-3 hidden sm:block" x-text="product.description.substring(0, 60) + '...'"></p>
+                            <div class="p-3 sm:p-6 flex-1 flex flex-col" style="background:#111111;">
+                                <h3 class="text-sm sm:text-xl font-semibold mb-1 truncate" style="color:#ffffff;" x-text="product.name"></h3>
+                                <p class="text-xs sm:text-sm mb-3 hidden sm:block" style="color:#888888;" x-text="product.description.substring(0, 60) + '...'"></p>
                                 
                                 <div class="mt-auto flex flex-col sm:flex-row justify-between items-start sm:items-end gap-2">
                                     <div>
                                         <template x-if="product.salePrice">
                                             <div class="flex flex-col">
-                                                <span class="text-gray-400 text-xs sm:text-sm line-through decoration-red-500" x-text="product.price"></span>
-                                                <span class="text-base sm:text-2xl font-bold text-gray-900" x-text="product.salePrice"></span>
+                                                <span class="text-xs sm:text-sm line-through decoration-red-500" style="color:#666666;" x-text="product.price"></span>
+                                                <span class="text-base sm:text-2xl font-bold" style="color:#c6ff34;" x-text="product.salePrice"></span>
                                             </div>
                                         </template>
                                         <template x-if="!product.salePrice">
-                                            <span class="text-base sm:text-2xl font-bold text-gray-900" x-text="product.price"></span>
+                                           <span class="text-base sm:text-2xl font-bold" style="color:#c6ff34;" x-text="product.price"></span>
                                         </template>
                                     </div>
-                                    <button @click="showProductDetail(product)" class="btn-premium w-full sm:w-auto text-xs sm:text-sm px-3 py-2">View Details</button>
+                                    <button @click="showProductDetail(product)" class="w-full sm:w-auto text-xs sm:text-sm px-3 py-2 font-bold uppercase tracking-wider transition-all" style="background:#c6ff34; color:#0a0a0a; border:none; cursor:pointer;" onmouseover="this.style.background='#d4ff66'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='#c6ff34'; this.style.transform='translateY(0)'">View Details</button>
                                 </div>
 
                                 <div class="mt-3 text-xs sm:text-sm">
@@ -2059,11 +2097,11 @@
         </section>
         
         <!-- Collections Section -->
-        <section class="section-padding bg-highlight parallax-bg" id="collections" style="background-image: url('https://images.unsplash.com/photo-1556906781-2a4123b7c7a3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');">
+        <section class="section-padding parallax-bg" id="collections" style="background-color:#0a0a0a; background-image:none;">
             <div class="container mx-auto px-6 relative z-10">
                 <div class="text-center mb-16 stagger-animation">
-                    <h2 class="text-4xl md:text-5xl font-bold mb-4 text-black">Our Collections</h2>
-                    <p class="text-xl text-black max-w-2xl mx-auto">Explore our curated collections of <strong>Hoodies</strong> and <strong>Sweet Shirts</strong> designed for every occasion.</p>
+                    <h2 class="text-4xl md:text-5xl font-bold mb-4" style="color:#c6ff34;">Our Collections</h2>
+                    <p class="text-xl max-w-2xl mx-auto" style="color:#cccccc;">Explore our curated collections of <strong style="color:#c6ff34;">Hoodies</strong> and <strong style="color:#c6ff34;">Sweet Shirts</strong> designed for every occasion.</p>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 stagger-animation">
@@ -2092,36 +2130,36 @@
         <section class="section-padding bg-cream">
             <div class="container mx-auto px-6">
                 <div class="text-center mb-16 stagger-animation">
-                    <h2 class="text-4xl md:text-5xl font-bold mb-4">About Us</h2>
+                    <h2 class="text-4xl md:text-5xl font-bold mb-4" style="color:#c6ff34;">About Us</h2>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8 stagger-animation">
                     <!-- Testimonial 1 -->
-                    <div class="testimonial-card hover-lift">
+                    <div class="hover-lift" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 2rem; box-shadow: 0 8px 32px rgba(0,0,0,0.4); transition: all 0.3s ease;">
                         <div class="flex items-center mb-4">
                             <div class="w-12 h-12 rounded-full overflow-hidden mr-4 morph-shape">
                                 <img src="https://i.postimg.cc/NfDb16hT/Screenshot-2025-10-27-214550.png" alt="Sarah Johnson" class="w-full h-full object-cover">
                             </div>
                             <div>
-                                <h2 class="font-semibold">Mian Muhammad Farooq Azam</h2>
-                                <h5 class="font-bold">(Founder)</h5>
+                                <h2 class="font-semibold" style="color:#ffffff;">Mian Muhammad Farooq Azam</h2>
+                                <h5 class="font-bold" style="color:#c6ff34;">(Founder)</h5>
                             </div>
                         </div>
-                        <p class="text-gray-600">"Assalam-o-Alaikum. My name is Mian Muhammad Farooq Azam, and I am the proud founder of this company. With a deep passion for quality, creativity, and customer satisfaction, I established this brand to bring innovation and elegance to the clothing industry. My goal is to create a company that not only provides premium apparel but also builds trust and long-term relationships with our customers."</p>
+                        <p style="color:#b0b0b0;">"Assalam-o-Alaikum. My name is Mian Muhammad Farooq Azam, and I am the proud founder of this company. With a deep passion for quality, creativity, and customer satisfaction, I established this brand to bring innovation and elegance to the clothing industry. My goal is to create a company that not only provides premium apparel but also builds trust and long-term relationships with our customers."</p>
                     </div>
                     
                     <!-- Testimonial 2 -->
-                    <div class="testimonial-card hover-lift">
+                    <div class="hover-lift" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 2rem; box-shadow: 0 8px 32px rgba(0,0,0,0.4); transition: all 0.3s ease;">
                         <div class="flex items-center mb-4">
                             <div class="w-12 h-12 rounded-full overflow-hidden mr-4 morph-shape">
                                 <img src="https://i.postimg.cc/5yxL0r27/Screenshot-2025-10-27-215542.png" alt="Michael Chen" class="w-full h-full object-cover">
                             </div>
                             <div>
-                                <h2 class="font-semibold">Ahmad Farooq</h2>
-                                <h5 class="font-bold">(CEO)</h5>
+                               <h2 class="font-semibold" style="color:#ffffff;">Ahmad Farooq</h2>
+                               <h5 class="font-bold" style="color:#c6ff34;">(CEO)</h5>
                             </div>
                         </div>
-                        <p class="text-gray-600">"Assalam-o-Alaikum. My name is Ahmad Farooq, and I am currently pursuing my Bachelor’s degree in Artificial Intelligence at FAST-NU. As the CEO, I am working alongside my father to expand and modernize our company. My focus is on integrating technology, design innovation, and digital growth strategies to help our brand reach new heights and connect with a global audience"</p>
+                        <p style="color:#b0b0b0;">"Assalam-o-Alaikum. My name is Ahmad Farooq, and I am currently pursuing my Bachelor’s degree in Artificial Intelligence at FAST-NU. As the CEO, I am working alongside my father to expand and modernize our company. My focus is on integrating technology, design innovation, and digital growth strategies to help our brand reach new heights and connect with a global audience"</p>
                     </div>
                 </div>
             </div>
@@ -2133,7 +2171,7 @@
         <div class="min-h-screen bg-cream py-8">
             <div class="container mx-auto px-4">
                 <div class="flex justify-between items-center mb-8">
-                    <h1 class="text-4xl font-bold">All Products</h1>
+                    <h1 class="text-4xl font-bold" style="color:#c6ff34;">All Products</h1>
                     <button @click="showHomePage()" class="flex items-center text-primary hover:text-gold transition-colors hover-lift">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -2145,7 +2183,7 @@
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-8">
                     <template x-for="product in products" :key="product.id">
                         <div class="product-card bg-white premium-shadow rounded-lg overflow-hidden hover-lift flex flex-col h-full">
-                            <div class="h-48 sm:h-80 overflow-hidden shrink-0">
+                            <div class="h-48 sm:h-80 overflow-hidden relative shrink-0 cursor-pointer" @click="showProductDetail(product)"> 
                                 <img :src="product.frontImages[0]" :alt="product.name" class="w-full h-full object-cover product-image">
                             </div>
                             <div class="p-3 sm:p-6 flex-1 flex flex-col">
@@ -2155,16 +2193,16 @@
                                     <div>
                                         <template x-if="product.salePrice">
                                             <div class="flex flex-wrap items-center gap-1">
-                                                <span class="text-base sm:text-2xl font-bold text-gold" x-text="'PKR ' + product.salePrice"></span>
-                                                <span class="original-price text-xs sm:text-sm ml-0 sm:ml-2" x-text="'PKR ' + product.price"></span>
+                                                <span class="text-base sm:text-2xl font-bold" style="color:#c6ff34;" x-text="'PKR ' + product.salePrice"></span>
+                                                <span class="text-xs sm:text-sm ml-0 sm:ml-2 line-through" style="color:#666666;" x-text="'PKR ' + product.price"></span>
                                                 <span class="discount-badge text-[10px] sm:text-xs" x-text="calculateDiscount(product) + '% OFF'"></span>
                                             </div>
                                         </template>
                                         <template x-if="!product.salePrice">
-                                            <span class="text-base sm:text-2xl font-bold text-gold" x-text="'PKR ' + product.price"></span>
+                                            <span class="text-base sm:text-2xl font-bold" style="color:#c6ff34;" x-text="'PKR ' + product.price"></span>
                                         </template>
                                     </div>
-                                    <button @click="showProductDetail(product)" class="btn-premium w-full sm:w-auto text-xs sm:text-sm py-2 px-3">View Details</button>
+                                    <button @click="showProductDetail(product)" class="w-full sm:w-auto text-xs sm:text-sm px-3 py-2 font-bold uppercase tracking-wider transition-all" style="background:#c6ff34; color:#0a0a0a; border:none; cursor:pointer;" onmouseover="this.style.background='#d4ff66'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='#c6ff34'; this.style.transform='translateY(0)'">View Details</button>
                                 </div>
                                 <div class="mt-3 text-xs sm:text-sm">
                                     <template x-if="product.stockStatus === 'out-of-stock'">
@@ -2233,7 +2271,7 @@
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-8">
                     <template x-for="product in categoryProducts" :key="product.id">
                         <div class="product-card bg-white premium-shadow rounded-lg overflow-hidden hover-lift flex flex-col h-full">
-                            <div class="h-48 sm:h-80 overflow-hidden shrink-0">
+                            <div class="h-48 sm:h-80 overflow-hidden relative shrink-0 cursor-pointer" @click="showProductDetail(product)">
                                 <img :src="product.frontImages[0]" :alt="product.name" class="w-full h-full object-cover product-image">
                             </div>
                             <div class="p-3 sm:p-6 flex-1 flex flex-col">
@@ -2252,7 +2290,7 @@
                                             <span class="text-base sm:text-2xl font-bold text-gold" x-text="'PKR ' + product.price"></span>
                                         </template>
                                     </div>
-                                    <button @click="showProductDetail(product)" class="btn-premium w-full sm:w-auto text-xs sm:text-sm py-2 px-3">View Details</button>
+                                    <button @click="showProductDetail(product)" class="w-full sm:w-auto text-xs sm:text-sm px-3 py-2 font-bold uppercase tracking-wider transition-all" style="background:#c6ff34; color:#0a0a0a; border:none; cursor:pointer;" onmouseover="this.style.background='#d4ff66'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='#c6ff34'; this.style.transform='translateY(0)'">View Details</button>
                                 </div>
                                 <div class="mt-3 text-xs sm:text-sm">
                                     <template x-if="product.stockStatus === 'out-of-stock'">
@@ -2284,19 +2322,10 @@
                     Back to Products
                 </button>
                 
-                <div x-show="currentPage === 'product-detail'" class="page-container">
-        <div class="min-h-screen bg-cream py-4 md:py-8">
-            <div class="container mx-auto px-4">
-                <button @click="showPreviousPage()" class="mb-4 md:mb-6 flex items-center text-primary hover:text-gold transition-colors hover-lift text-sm md:text-base">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 md:h-5 md:w-5 mr-1 md:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                    </svg>
-                    Back to Products
-                </button>
-                
-                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-                    <div class="flex flex-col md:flex-row">
-                        <div class="w-full md:w-1/2 p-4 md:p-6">
+                <div class="rounded-lg overflow-hidden" style="background:transparent; border:none; box-shadow:none;">
+                    <div class="flex flex-col md:flex-row gap-6">
+                        
+                        <div class="w-full md:w-1/2 p-4 md:p-6 rounded-lg" style="background:#111111;">
                             <template x-if="!selectedProduct.isCustomizable">
                                 <div>
                                     <div class="mb-4 h-64 sm:h-80 md:h-96 overflow-hidden rounded-lg bg-gray-50 flex items-center justify-center">
@@ -2317,8 +2346,8 @@
                             <template x-if="selectedProduct.isCustomizable">
                                 <div>
                                     <div class="flex justify-center space-x-2 mb-4">
-                                        <button @click="mockupView = 'front'" :class="mockupView === 'front' ? 'bg-gold text-white' : 'bg-white border border-gray-300'" class="px-3 py-1 md:px-4 md:py-1 rounded-full text-xs md:text-sm transition-colors shadow-sm">Front View</button>
-                                        <button x-show="selectedProduct.detailImages && selectedProduct.detailImages.length > 0" @click="mockupView = 'back'" :class="mockupView === 'back' ? 'bg-gold text-white' : 'bg-white border border-gray-300'" class="px-3 py-1 md:px-4 md:py-1 rounded-full text-xs md:text-sm transition-colors shadow-sm">Back View</button>
+                                        <button @click="mockupView = 'front'" :class="mockupView === 'front' ? 'bg-gold text-white' : 'bg-white border border-gray-300'" class="px-3 py-1 md:px-4 md:py-1 rounded-full text-xs md:text-sm transition-colors shadow-sm text-black">Front View</button>
+                                        <button x-show="selectedProduct.detailImages && selectedProduct.detailImages.length > 0" @click="mockupView = 'back'" :class="mockupView === 'back' ? 'bg-gold text-white' : 'bg-white border border-gray-300'" class="px-3 py-1 md:px-4 md:py-1 rounded-full text-xs md:text-sm transition-colors shadow-sm text-black">Back View</button>
                                     </div>
 
                                     <div class="mockup-container border border-gray-200 shadow-inner" :class="!customImage ? 'cursor-pointer' : ''" style="background-color: #f0f0f0;" @click="if(!customImage) document.getElementById('customImageInput').click()" :title="!customImage ? 'Click to upload your image' : ''">
@@ -2334,7 +2363,6 @@
                                         
                                         <template x-if="customImage && selectedPrintOption">
                                             <div class="print-area" :class="getPrintPositionClass()">
-                                                <!-- Draggable & Resizable Image -->
                                                 <div
                                                     class="absolute inset-0 flex items-center justify-center"
                                                     style="cursor: move; touch-action: none;"
@@ -2347,7 +2375,6 @@
                                                         :style="`transform: translate(${customOffsetX}px, ${customOffsetY}px) scale(${customScale}); transform-origin: center;`"
                                                         draggable="false"
                                                     >
-                                                    <!-- Delete Button -->
                                                     <button
                                                         class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-lg z-20 hover:bg-red-600"
                                                         style="pointer-events: all; cursor: pointer;"
@@ -2356,7 +2383,6 @@
                                                     >
                                                         <i class="fas fa-times text-xs"></i>
                                                     </button>
-                                                    <!-- Resize Handle (bottom-right corner) -->
                                                     <div
                                                         class="absolute bottom-1 right-1 w-5 h-5 bg-white border-2 border-gold rounded-sm z-20 flex items-center justify-center shadow"
                                                         style="pointer-events: all; cursor: se-resize;"
@@ -2388,43 +2414,43 @@
                             </template>
                         </div>
                         
-                        <div class="w-full md:w-1/2 p-4 md:p-6 bg-highlight">
-                            <h1 class="text-2xl md:text-3xl font-bold mb-2" x-text="selectedProduct.name"></h1>
-                            <p class="text-sm md:text-base text-gray-600 mb-4" x-text="selectedProduct.description"></p>
+                        <div class="w-full md:w-1/2 p-4 md:p-6 rounded-lg" style="background:#161616;">
+                            <h1 class="text-2xl md:text-3xl font-bold mb-2" style="color:#ffffff;" x-text="selectedProduct.name"></h1>
+                            <p class="text-sm md:text-base mb-4" style="color:#888888;" x-text="selectedProduct.description"></p>
                             
                             <div class="mb-6">
                                 <template x-if="selectedProduct.salePrice">
                                     <div class="flex flex-col items-start">
-                                        <span class="text-gray-500 text-base md:text-lg line-through decoration-red-500 decoration-2 mb-1" x-text="selectedProduct.price"></span>
+                                        <span class="text-base md:text-lg line-through decoration-red-500 decoration-2 mb-1" style="color:#666666;" x-text="'PKR ' + selectedProduct.price"></span>
                                         <div class="flex items-center gap-2 md:gap-3">
-                                            <span class="text-3xl md:text-4xl font-bold text-gray-900" x-text="selectedProduct.salePrice"></span>
+                                            <span class="text-3xl md:text-4xl font-bold" style="color:#c6ff34;" x-text="'PKR ' + selectedProduct.salePrice"></span>
                                             <span class="bg-red-600 text-white px-2 py-1 md:px-3 rounded-full text-xs md:text-sm font-bold shadow-sm" x-text="calculateDiscount(selectedProduct) + '% OFF'"></span>
                                         </div>
                                     </div>
                                 </template>
                                 <template x-if="!selectedProduct.salePrice">
-                                    <span class="text-3xl md:text-4xl font-bold text-gray-900" x-text="selectedProduct.price"></span>
+                                    <span class="text-3xl md:text-4xl font-bold" style="color:#c6ff34;" x-text="'PKR ' + selectedProduct.price"></span>
                                 </template>
                             </div>
                             
                             <div class="mb-6">
-                                <h3 class="font-bold mb-2 text-sm md:text-base">Select Color</h3>
+                                <h3 class="font-bold mb-2 text-sm md:text-base" style="color:#ffffff;">Select Color</h3>
                                 <div class="flex flex-wrap gap-2 mb-2">
                                     <template x-for="color in selectedProduct.colors" :key="color.code">
                                         <button 
                                             @click="selectColor(color)" 
                                             class="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 focus:outline-none transition-transform hover:scale-110"
                                             :style="`background-color: ${color.code}`"
-                                            :class="selectedColor && selectedColor.code === color.code ? 'border-black scale-110 ring-2 ring-offset-2 ring-gray-400' : 'border-gray-300'"
+                                            :class="selectedColor && selectedColor.code === color.code ? 'border-white scale-110 ring-2 ring-offset-2 ring-gray-400' : 'border-gray-600'"
                                             :title="color.name"
                                         ></button>
                                     </template>
                                 </div>
-                                <p class="text-xs md:text-sm text-gray-600" x-text="selectedColor ? 'Selected Color: ' + selectedColor.name : 'Please select a color'"></p>
+                                <p class="text-xs md:text-sm" style="color:#888888;" x-text="selectedColor ? 'Selected Color: ' + selectedColor.name : 'Please select a color'"></p>
                             </div>
                             
                             <div class="mb-6">
-                                <h3 class="font-bold mb-2 text-sm md:text-base">Select Size</h3>
+                                <h3 class="font-bold mb-2 text-sm md:text-base" style="color:#ffffff;">Select Size</h3>
                                 <div class="flex flex-wrap gap-2">
                                     <template x-for="size in selectedProduct.sizes" :key="size">
                                         <button 
@@ -2432,7 +2458,7 @@
                                             class="size-option text-sm md:text-base py-2 px-3 md:py-2 md:px-4"
                                             :class="{
                                                 'active': selectedSize === size,
-                                                'opacity-50 cursor-not-allowed bg-gray-200': selectedColor && getStockForColorAndSize(selectedColor.code, size) == 0
+                                                'opacity-50 cursor-not-allowed bg-gray-200 text-gray-500 border-gray-400': selectedColor && getStockForColorAndSize(selectedColor.code, size) == 0
                                             }"
                                             x-text="size"
                                         ></button>
@@ -2442,17 +2468,17 @@
                             </div>
                             
                             <template x-if="selectedProduct.isCustomizable">
-                                <div class="mb-6 p-3 md:p-4 bg-gray-50 border border-gold rounded-lg shadow-sm">
-                                    <h3 class="font-bold mb-3 text-gold text-sm md:text-base"><i class="fas fa-magic mr-2"></i>Customize Your Design</h3>
+                                <div class="mb-6 p-3 md:p-4 rounded-lg shadow-sm" style="background:#222222; border: 1px solid rgba(198,255,52,0.3);">
+                                    <h3 class="font-bold mb-3 text-sm md:text-base" style="color:#c6ff34;"><i class="fas fa-magic mr-2"></i>Customize Your Design</h3>
                                     
-                                    <label class="block text-xs md:text-sm font-semibold mb-1 text-gray-700">1. Select Printing Size & Placement</label>
+                                    <label class="block text-xs md:text-sm font-semibold mb-1" style="color:#cccccc;">1. Select Printing Size & Placement</label>
                                     <div class="space-y-2 mb-4">
                                         <template x-for="(opt, key) in selectedProduct.printOptions" :key="key">
                                             <template x-if="opt.active">
-                                                <label class="flex flex-col sm:flex-row sm:items-center justify-between cursor-pointer border bg-white p-2 md:p-3 rounded hover:border-gold transition-colors gap-1 sm:gap-0" :class="selectedPrintOption === key ? 'border-gold ring-1 ring-gold' : 'border-gray-200'">
+                                                <label class="flex flex-col sm:flex-row sm:items-center justify-between cursor-pointer border p-2 md:p-3 rounded hover:border-gold transition-colors gap-1 sm:gap-0" :class="selectedPrintOption === key ? 'border-gold ring-1 ring-gold' : 'border-gray-600'">
                                                     <div class="flex items-center space-x-2">
                                                         <input type="radio" name="printSize" :value="key" x-model="selectedPrintOption" class="text-gold mt-0.5 sm:mt-0">
-                                                        <span x-text="opt.label" class="font-medium text-xs md:text-sm leading-tight"></span>
+                                                        <span x-text="opt.label" class="font-medium text-xs md:text-sm leading-tight text-white"></span>
                                                     </div>
                                                     <span class="text-gold font-bold text-xs md:text-sm ml-6 sm:ml-0" x-text="'+PKR ' + opt.price"></span>
                                                 </label>
@@ -2460,14 +2486,12 @@
                                         </template>
                                     </div>
 
-                                    <label class="block text-xs md:text-sm font-semibold mb-1 text-gray-700">2. Upload Your Image/Logo</label>
+                                    <label class="block text-xs md:text-sm font-semibold mb-1" style="color:#cccccc;">2. Upload Your Image/Logo</label>
                                     <input type="file" id="customImageInput" @change="handleCustomImageUpload" accept="image/*" class="hidden">
-
-                                    
                                 </div>
                             </template>
                             
-                            <div class="flex flex-col sm:flex-row gap-3 mt-2 md:mt-0">
+                            <div class="flex flex-col sm:flex-row gap-3 mt-2 md:mt-0 mb-10">
                                 <button 
                                     @click="addToCart(selectedProduct, $event)" 
                                     class="cart-button w-full sm:flex-1"
@@ -2479,71 +2503,71 @@
                                 </button>
                                 <button 
                                     @click="buyNow(selectedProduct)" 
-                                    class="w-full sm:flex-1 btn-gold py-3 md:py-4 rounded-md font-medium shadow-md hover-lift premium-glow text-sm md:text-base"
+                                    class="w-full sm:flex-1 btn-gold py-3 md:py-4 rounded-md font-medium shadow-md hover-lift premium-glow text-sm md:text-base text-black"
                                 >
                                     Buy Now
                                 </button>
                             </div>
-                        </div>
-                    </div>
-                    
-                    <div class="p-4 md:p-6 border-t border-gray-200 bg-gray-50">
-                        <h3 class="text-xl md:text-2xl font-bold mb-4 md:mb-6">Customer Reviews</h3>
 
-                        <div x-show="userCanReview" class="bg-white p-4 md:p-6 rounded-lg shadow-md mb-6 md:mb-8 border border-gold">
-                            <h4 class="font-bold text-base md:text-lg mb-2 md:mb-3">Write a Review</h4>
-                            <p class="text-xs md:text-sm text-green-600 mb-3 md:mb-4"><i class="fas fa-check-circle"></i> Verified Purchase</p>
-                            
-                            <form @submit.prevent="submitReview()">
-                                <div class="flex items-center mb-3 md:mb-4">
-                                    <label class="mr-3 md:mr-4 text-sm md:text-base text-gray-700">Rating:</label>
-                                    <div class="flex space-x-1 cursor-pointer">
-                                        <template x-for="i in 5">
-                                            <i class="fas fa-star text-xl md:text-2xl transition-colors hover:scale-110" 
-                                               :class="i <= newReview.rating ? 'text-yellow-400' : 'text-gray-300'"
-                                               @click="newReview.rating = i"></i>
-                                        </template>
-                                    </div>
-                                </div>
+                            <div class="pt-6 border-t border-gray-800">
+                                <h3 class="text-xl md:text-2xl font-bold mb-4 md:mb-6" style="color:#ffffff;">Customer Reviews</h3>
 
-                                <div class="mb-3 md:mb-4">
-                                    <textarea x-model="newReview.comment" class="w-full p-2 md:p-3 text-sm md:text-base border border-gray-300 rounded focus:border-gold focus:outline-none" rows="3" placeholder="How was the product?"></textarea>
-                                </div>
-
-                                <button type="submit" class="btn-premium py-2 px-4 md:px-6 rounded text-xs md:text-sm w-full sm:w-auto">Submit Review</button>
-                            </form>
-                        </div>
-
-                        <div x-show="!userCanReview && isLoggedIn" class="mb-6 md:mb-8 p-3 md:p-4 bg-blue-50 text-blue-700 rounded-lg text-sm md:text-base">
-                            <p>You must purchase this item to leave a review.</p>
-                        </div>
-                        <div x-show="!isLoggedIn" class="mb-6 md:mb-8 p-3 md:p-4 bg-gray-100 text-gray-700 rounded-lg text-sm md:text-base">
-                            <p>Please login to leave a review.</p>
-                        </div>
-
-                        <div class="space-y-3 md:space-y-4">
-                            <template x-show="productReviews.length === 0">
-                                <div class="text-gray-500 italic text-center py-4 text-sm md:text-base">
-                                    No reviews yet. Be the first to review this product!
-                                </div>
-                            </template>
-
-                            <template x-for="review in productReviews" :key="review.date + review.userName">
-                                <div class="bg-white p-3 md:p-4 rounded-lg shadow-sm border border-gray-100">
-                                    <div class="flex justify-between items-start mb-2">
-                                        <div>
-                                            <p class="font-bold text-gray-800 text-sm md:text-base" x-text="review.userName"></p>
-                                            <div class="flex text-yellow-400 text-[10px] md:text-xs mt-1">
+                                <div x-show="userCanReview" class="p-4 md:p-6 rounded-lg shadow-md mb-6 md:mb-8" style="background:#0a0a0a; border: 1px solid rgba(198,255,52,0.3);">
+                                    <h4 class="font-bold text-base md:text-lg mb-2 md:mb-3" style="color:#ffffff;">Write a Review</h4>
+                                    <p class="text-xs md:text-sm text-green-500 mb-3 md:mb-4"><i class="fas fa-check-circle"></i> Verified Purchase</p>
+                                    
+                                    <form @submit.prevent="submitReview()">
+                                        <div class="flex items-center mb-3 md:mb-4">
+                                            <label class="mr-3 md:mr-4 text-sm md:text-base" style="color:#cccccc;">Rating:</label>
+                                            <div class="flex space-x-1 cursor-pointer">
                                                 <template x-for="i in 5">
-                                                    <i class="fas fa-star" :class="i <= review.rating ? '' : 'text-gray-300'"></i>
+                                                    <i class="fas fa-star text-xl md:text-2xl transition-colors hover:scale-110" 
+                                                       :class="i <= newReview.rating ? 'text-yellow-400' : 'text-gray-600'"
+                                                       @click="newReview.rating = i"></i>
                                                 </template>
                                             </div>
                                         </div>
-                                        <span class="text-[10px] md:text-xs text-gray-500" x-text="review.date"></span>
-                                    </div>
-                                    <p class="text-gray-600 text-xs md:text-sm mt-2" x-text="review.comment"></p>
+
+                                        <div class="mb-3 md:mb-4">
+                                            <textarea x-model="newReview.comment" class="w-full p-2 md:p-3 text-sm md:text-base rounded focus:outline-none" style="background:#111111; border:1px solid #333333; color:#ffffff;" rows="3" placeholder="How was the product?"></textarea>
+                                        </div>
+
+                                        <button type="submit" class="btn-premium py-2 px-4 md:px-6 rounded text-xs md:text-sm w-full sm:w-auto">Submit Review</button>
+                                    </form>
                                 </div>
-                            </template>
+
+                                <div x-show="!userCanReview && isLoggedIn" class="mb-6 md:mb-8 p-3 md:p-4 rounded-lg text-sm md:text-base" style="background: rgba(59, 130, 246, 0.1); color: #60a5fa;">
+                                    <p>You must purchase this item to leave a review.</p>
+                                </div>
+                                <div x-show="!isLoggedIn" class="mb-6 md:mb-8 p-3 md:p-4 rounded-lg text-sm md:text-base" style="background: rgba(255, 255, 255, 0.05); color: #cccccc;">
+                                    <p>Please login to leave a review.</p>
+                                </div>
+
+                                <div class="space-y-3 md:space-y-4">
+                                    <template x-show="productReviews.length === 0">
+                                        <div class="text-gray-500 italic text-center py-4 text-sm md:text-base">
+                                            No reviews yet. Be the first to review this product!
+                                        </div>
+                                    </template>
+
+                                    <template x-for="review in productReviews" :key="review.date + review.userName">
+                                        <div class="p-3 md:p-4 rounded-lg" style="background:#0a0a0a; border:1px solid #222222;">
+                                            <div class="flex justify-between items-start mb-2">
+                                                <div>
+                                                    <p class="font-bold text-sm md:text-base" style="color:#ffffff;" x-text="review.userName"></p>
+                                                    <div class="flex text-yellow-400 text-[10px] md:text-xs mt-1">
+                                                        <template x-for="i in 5">
+                                                            <i class="fas fa-star" :class="i <= review.rating ? '' : 'text-gray-600'"></i>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                                <span class="text-[10px] md:text-xs text-gray-500" x-text="review.date"></span>
+                                            </div>
+                                            <p class="text-xs md:text-sm mt-2" style="color:#888888;" x-text="review.comment"></p>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2551,69 +2575,8 @@
         </div>
     </div>
                     
-                    <div class="p-6 border-t border-gray-200 bg-gray-50">
-                        <h3 class="text-2xl font-bold mb-6">Customer Reviews</h3>
-
-                        <div x-show="userCanReview" class="bg-white p-6 rounded-lg shadow-md mb-8 border border-gold">
-                            <h4 class="font-bold text-lg mb-3">Write a Review</h4>
-                            <p class="text-sm text-green-600 mb-4"><i class="fas fa-check-circle"></i> Verified Purchase</p>
-                            
-                            <form @submit.prevent="submitReview()">
-                                <div class="flex items-center mb-4">
-                                    <label class="mr-4 text-gray-700">Rating:</label>
-                                    <div class="flex space-x-1 cursor-pointer">
-                                        <template x-for="i in 5">
-                                            <i class="fas fa-star text-2xl transition-colors hover:scale-110" 
-                                               :class="i <= newReview.rating ? 'text-yellow-400' : 'text-gray-300'"
-                                               @click="newReview.rating = i"></i>
-                                        </template>
-                                    </div>
-                                </div>
-
-                                <div class="mb-4">
-                                    <textarea x-model="newReview.comment" class="w-full p-3 border border-gray-300 rounded focus:border-gold focus:outline-none" rows="3" placeholder="How was the product?"></textarea>
-                                </div>
-
-                                <button type="submit" class="btn-premium py-2 px-6 rounded text-sm">Submit Review</button>
-                            </form>
-                        </div>
-
-                        <div x-show="!userCanReview && isLoggedIn" class="mb-8 p-4 bg-blue-50 text-blue-700 rounded-lg">
-                            <p>You must purchase this item to leave a review.</p>
-                        </div>
-                        <div x-show="!isLoggedIn" class="mb-8 p-4 bg-gray-100 text-gray-700 rounded-lg">
-                            <p>Please login to leave a review.</p>
-                        </div>
-
-                        <div class="space-y-4">
-                            <template x-show="productReviews.length === 0">
-                                <div class="text-gray-500 italic text-center py-4">
-                                    No reviews yet. Be the first to review this product!
-                                </div>
-                            </template>
-
-                            <template x-for="review in productReviews" :key="review.date + review.userName">
-                                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-                                    <div class="flex justify-between items-start mb-2">
-                                        <div>
-                                            <p class="font-bold text-gray-800" x-text="review.userName"></p>
-                                            <div class="flex text-yellow-400 text-xs mt-1">
-                                                <template x-for="i in 5">
-                                                    <i class="fas fa-star" :class="i <= review.rating ? '' : 'text-gray-300'"></i>
-                                                </template>
-                                            </div>
-                                        </div>
-                                        <span class="text-xs text-gray-500" x-text="review.date"></span>
-                                    </div>
-                                    <p class="text-gray-600 text-sm" x-text="review.comment"></p>
-                                </div>
-                            </template>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>    
+                    
+   
 
     <!-- Admin Dashboard -->
     <div x-show="currentPage === 'admin-dashboard'" class="page-container">
@@ -3202,7 +3165,205 @@
             <span class="text-gray-800 font-semibold tracking-wide text-sm" x-text="showCartNotification ? 'Item added to cart successfully!' : notification.message"></span>
         </div>
     </div>
+    <!-- Search Overlay -->
+    <div x-show="searchOpen" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-[2500] flex flex-col items-center pt-24 px-4"
+         style="background: rgba(0,0,0,0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);"
+         @click.self="searchOpen = false; searchQuery = ''; searchResults = []">
     
+        <div class="w-full max-w-2xl"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 -translate-y-4"
+             x-transition:enter-end="opacity-100 translate-y-0">
+    
+            <!-- Search Input Box -->
+            <div class="flex items-center gap-3 px-5 py-4 rounded-2xl mb-4"
+                 style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);">
+                <i class="fas fa-search text-lg" style="color:#c6ff34;"></i>
+                <input 
+                    x-ref="searchInput"
+                    x-model="searchQuery"
+                    @input="runSearch()"
+                    @keydown.escape="searchOpen = false; searchQuery = ''; searchResults = []"
+                    type="text"
+                    placeholder="Search products or categories..."
+                    class="flex-1 bg-transparent outline-none text-base"
+                    style="color:#ffffff; font-family:'Inter',sans-serif;"
+                >
+                <button @click="searchOpen = false; searchQuery = ''; searchResults = []" style="color:#888888;" class="hover:text-white transition-colors">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+    
+            <!-- Results -->
+            <div x-show="searchQuery.length > 0" class="rounded-2xl overflow-hidden"
+                 style="background: rgba(15,15,15,0.85); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 16px 48px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08);">
+                
+                <!-- No Results -->
+                <div x-show="searchResults.products.length === 0 && searchResults.categories.length === 0 && searchQuery.length > 0"
+                     class="px-6 py-8 text-center" style="color:#666666;">
+                    <i class="fas fa-search text-3xl mb-3 block" style="color:#333333;"></i>
+                    No results found for "<span x-text="searchQuery" style="color:#c6ff34;"></span>"
+                </div>
+    
+                <!-- Category Results -->
+                <template x-if="searchResults.categories && searchResults.categories.length > 0">
+                    <div>
+                        <div class="px-5 py-2 text-xs font-bold uppercase tracking-widest" style="color:#c6ff34; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            Categories
+                        </div>
+                        <template x-for="cat in searchResults.categories" :key="cat.id">
+                            <button @click="searchOpen = false; searchQuery = ''; searchResults = []; showCategoryPage(cat.id)"
+                                    class="w-full flex items-center gap-4 px-5 py-3 text-left transition-colors"
+                                    style="border-bottom: 1px solid rgba(255,255,255,0.04);"
+                                    onmouseover="this.style.background='rgba(198,255,52,0.07)'" 
+                                    onmouseout="this.style.background='transparent'">
+                                <div class="w-10 h-10 rounded-lg overflow-hidden shrink-0">
+                                    <img :src="cat.image" :alt="cat.name" class="w-full h-full object-cover">
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-sm" style="color:#ffffff;" x-text="cat.name"></p>
+                                    <p class="text-xs" style="color:#666666;" x-text="cat.description.substring(0,50) + '...'"></p>
+                                </div>
+                                <i class="fas fa-arrow-right ml-auto text-xs" style="color:#c6ff34;"></i>
+                            </button>
+                        </template>
+                    </div>
+                </template>
+    
+                <!-- Product Results -->
+                <template x-if="searchResults.products && searchResults.products.length > 0">
+                    <div>
+                        <div class="px-5 py-2 text-xs font-bold uppercase tracking-widest" style="color:#c6ff34; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            Products
+                        </div>
+                        <template x-for="product in searchResults.products.slice(0,6)" :key="product.id">
+                            <button @click="searchOpen = false; searchQuery = ''; searchResults = []; showProductDetail(product)"
+                                    class="w-full flex items-center gap-4 px-5 py-3 text-left transition-colors"
+                                    style="border-bottom: 1px solid rgba(255,255,255,0.04);"
+                                    onmouseover="this.style.background='rgba(198,255,52,0.07)'"
+                                    onmouseout="this.style.background='transparent'">
+                                <div class="w-10 h-10 rounded-lg overflow-hidden shrink-0">
+                                    <img :src="product.frontImages[0]" :alt="product.name" class="w-full h-full object-cover">
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-sm" style="color:#ffffff;" x-text="product.name"></p>
+                                    <p class="text-xs" style="color:#c6ff34;" x-text="'PKR ' + (product.salePrice || product.price)"></p>
+                                </div>
+                                <template x-if="product.salePrice">
+                                    <span class="text-xs px-2 py-1 rounded-full font-bold" style="background:#dc3545; color:#fff;" x-text="calculateDiscount(product) + '% OFF'"></span>
+                                </template>
+                            </button>
+                        </template>
+                    </div>
+                </template>
+            </div>
+    
+            <!-- Quick links when nothing typed -->
+            <div x-show="searchQuery.length === 0" class="text-center mt-6" style="color:#444444; font-size:0.85rem;">
+                Start typing to search products and categories...
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mobile Menu Overlay -->
+    <div x-show="mobileMenuOpen"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-[2500] md:hidden"
+         style="background: rgba(0,0,0,0.75); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);"
+         @click.self="mobileMenuOpen = false">
+    
+        <div class="absolute top-0 right-0 h-full w-4/5 max-w-xs flex flex-col"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="translate-x-full"
+             x-transition:enter-end="translate-x-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="translate-x-0"
+             x-transition:leave-end="translate-x-full"
+             style="background: rgba(10,10,10,0.92); border-left: 1px solid rgba(255,255,255,0.08); box-shadow: -10px 0 40px rgba(0,0,0,0.6);">
+    
+            <!-- Header -->
+            <div class="flex items-center justify-between px-6 py-5" style="border-bottom: 1px solid rgba(255,255,255,0.07);">
+                <span style="font-family:'Cormorant Garamond',serif; font-size:1.3rem; font-weight:700; letter-spacing:2px;">
+                    <span style="color:#c6ff34;">TREND</span><span style="color:#ffffff;">TROVE</span>
+                </span>
+                <button @click="mobileMenuOpen = false" style="color:#888888;" class="hover:text-white transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+    
+            <!-- Nav Links -->
+            <div class="px-6 py-4" style="border-bottom: 1px solid rgba(255,255,255,0.07);">
+                <a @click.prevent="mobileMenuOpen = false; showHomePage()" href="#" class="flex items-center gap-3 py-3 text-sm font-bold uppercase tracking-widest transition-colors" style="color:#ffffff; letter-spacing:0.12em;"
+                   onmouseover="this.style.color='#c6ff34'" onmouseout="this.style.color='#ffffff'">
+                    <i class="fas fa-home w-4" style="color:#c6ff34;"></i> Home
+                </a>
+                <a @click.prevent="mobileMenuOpen = false; showAllProductsPage()" href="#" class="flex items-center gap-3 py-3 text-sm font-bold uppercase tracking-widest transition-colors" style="color:#ffffff;"
+                   onmouseover="this.style.color='#c6ff34'" onmouseout="this.style.color='#ffffff'">
+                    <i class="fas fa-th w-4" style="color:#c6ff34;"></i> All Products
+                </a>
+                <a @click.prevent="mobileMenuOpen = false; showCustomCategory()" href="#" class="flex items-center gap-3 py-3 text-sm font-bold uppercase tracking-widest transition-colors" style="color:#ffffff;"
+                   onmouseover="this.style.color='#c6ff34'" onmouseout="this.style.color='#ffffff'">
+                    <i class="fas fa-magic w-4" style="color:#c6ff34;"></i> Custom
+                </a>
+                <a href="https://wa.me/message/TY5U3IM2LB6HJ1" @click="mobileMenuOpen = false" class="flex items-center gap-3 py-3 text-sm font-bold uppercase tracking-widest" style="color:#ffffff;"
+                   onmouseover="this.style.color='#c6ff34'" onmouseout="this.style.color='#ffffff'">
+                    <i class="fab fa-whatsapp w-4" style="color:#c6ff34;"></i> Contact
+                </a>
+            </div>
+    
+            <!-- All Categories -->
+            <div class="flex-1 overflow-y-auto px-6 py-4">
+                <p class="text-xs font-bold uppercase tracking-widest mb-3" style="color:#c6ff34;">All Categories</p>
+                
+                <template x-if="categories.length === 0">
+                    <p class="text-sm" style="color:#555555;">No categories yet.</p>
+                </template>
+    
+                <template x-for="cat in categories" :key="cat.id">
+                    <button @click="mobileMenuOpen = false; showCategoryPage(cat.id)"
+                            class="w-full flex items-center gap-4 py-3 text-left transition-colors"
+                            style="border-bottom: 1px solid rgba(255,255,255,0.05);"
+                            onmouseover="this.style.background='rgba(198,255,52,0.06)'; this.style.paddingLeft='6px'"
+                            onmouseout="this.style.background='transparent'; this.style.paddingLeft='0px'">
+                        <div class="w-12 h-12 rounded-xl overflow-hidden shrink-0">
+                            <img :src="cat.image" :alt="cat.name" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-bold text-sm" style="color:#ffffff;" x-text="cat.name"></p>
+                            <p class="text-xs mt-0.5" style="color:#555555;" x-text="getProductCountByCategory(cat.id) + ' products'"></p>
+                        </div>
+                        <i class="fas fa-chevron-right text-xs" style="color:#c6ff34;"></i>
+                    </button>
+                </template>
+    
+                <!-- Custom Orders always shown -->
+                <button @click="mobileMenuOpen = false; showCustomCategory()"
+                        class="w-full flex items-center gap-4 py-3 text-left mt-2 rounded-xl px-3"
+                        style="background: rgba(198,255,52,0.08); border: 1px solid rgba(198,255,52,0.2);">
+                    <div class="w-12 h-12 rounded-xl overflow-hidden shrink-0 flex items-center justify-center" style="background: rgba(198,255,52,0.15);">
+                        <i class="fas fa-magic" style="color:#c6ff34; font-size:1.2rem;"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-bold text-sm" style="color:#c6ff34;">Custom Orders</p>
+                        <p class="text-xs mt-0.5" style="color:#888888;">Design your own apparel</p>
+                    </div>
+                    <i class="fas fa-chevron-right text-xs" style="color:#c6ff34;"></i>
+                </button>
+            </div>
+        </div>
+    </div>
     <!-- Login Modal -->
     <div class="modal-overlay" :class="{'active': loginModalOpen}">
         <div class="modal-content">
@@ -3812,61 +3973,61 @@
                     </section> 
                 </div>   
                 <!-- Footer -->
-                <footer class="py-12 bg-highlight">
+                <footer class="py-12" style="background:#0d0d0d; border-top: 1px solid #1a1a1a;">
                     <div class="container mx-auto px-6">
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                             <div>
-                                <div class="logo text-2xl mb-4">
-                                    <span class="text-gold">T</span>rend<span class="text-gold">T</span>rove
+                                <div class="logo text-2xl mb-4" style="color:#cbff34;">
+                                    TrendTrove
                                 </div>
-                                <p class="text-gray-600 mb-4">Premium fashion for the modern individual. Quality meets style in every piece.</p>
+                                <p style="color:#ffffff;" class="mb-4">Premium fashion for the modern individual. Quality meets style in every piece.</p>
                                 <div class="flex space-x-4">
-                                    <a href="https://www.facebook.com/share/1KQP85v2Hx/" target="_blank" class="text-gray-600 hover:text-gold transition-colors hover-lift">
+                                    <a href="https://www.facebook.com/share/1KQP85v2Hx/" target="_blank" class="hover-lift transition-opacity hover:opacity-80" style="color:#cbff34; font-size: 1.25rem;">
                                         <i class="fab fa-facebook-f"></i>
                                     </a>
-                                    <a href="https://www.instagram.com/trend__trove_offical?igsh=NmFkcXB4YjB5OXE=" target="_blank" class="text-gray-600 hover:text-gold transition-colors hover-lift">
+                                    <a href="https://www.instagram.com/trend__trove_offical?igsh=NmFkcXB4YjB5OXE=" target="_blank" class="hover-lift transition-opacity hover:opacity-80" style="color:#cbff34; font-size: 1.25rem;">
                                         <i class="fab fa-instagram"></i>
                                     </a>
                                 </div>
                             </div>
                             
                             <div>
-                                <h3 class="font-semibold text-lg mb-4">Shop</h3>
+                                <h3 class="font-semibold text-lg mb-4" style="color:#cbff34;">Shop</h3>
                                 <ul class="space-y-2">
-                                    <li><a href="#" @click.prevent="showAllProductsPage()" class="footer-link text-gray-600">New Arrivals</a></li>
-                                    <li><a href="#" @click.prevent="showAllProductsPage()" class="footer-link text-gray-600">Custom</a></li>
-                                    <li><a href="#" @click.prevent="showSalePage()" class="footer-link text-gray-600">Sale</a></li>
+                                    <li><a href="#" @click.prevent="showAllProductsPage()" class="footer-link" style="color:#ffffff;">New Arrivals</a></li>
+                                    <li><a href="#" @click.prevent="showAllProductsPage()" class="footer-link" style="color:#ffffff;">Custom</a></li>
+                                    <li><a href="#" @click.prevent="showSalePage()" class="footer-link" style="color:#ffffff;">Sale</a></li>
                                 </ul>
                             </div>
                             
                             <div>
-                                <h3 class="font-semibold text-lg mb-4">Information</h3>
+                                <h3 class="font-semibold text-lg mb-4" style="color:#cbff34;">Information</h3>
                                 <ul class="space-y-2">
-                                    <li><a href="#" @click.prevent="showHomePage(); setTimeout(() => document.getElementById('about').scrollIntoView({behavior:'smooth'}), 500)" class="footer-link text-gray-600">About Us</a></li>
-                                    <li><a href="https://wa.me/923022501337" target="_blank" class="footer-link text-gray-600">Contact</a></li>
-                                    <li><a href="#" class="footer-link text-gray-600">Shipping & Returns</a></li>
+                                    <li><a href="#" @click.prevent="showHomePage(); setTimeout(() => document.getElementById('about').scrollIntoView({behavior:'smooth'}), 500)" class="footer-link" style="color:#ffffff;">About Us</a></li>
+                                    <li><a href="https://wa.me/923022501337" target="_blank" class="footer-link" style="color:#ffffff;">Contact</a></li>
+                                    <li><a href="#" class="footer-link" style="color:#ffffff;">Shipping & Returns</a></li>
                                 </ul>
                             </div>
                             
                             <div>
-                                <h3 class="font-semibold text-lg mb-4">Contact</h3>
+                                <h3 class="font-semibold text-lg mb-4" style="color:#cbff34;">Contact</h3>
                                 <ul class="space-y-2">
                                     <li>
-                                        <a href="mailto:trendtrove2989@gmail.com" class="text-gray-600 hover:text-gold transition-colors flex items-center">
-                                            <i class="fas fa-envelope mr-3 text-lg"></i>trendtrove2989@gmail.com
+                                        <a href="mailto:trendtrove2989@gmail.com" class="footer-link" style="color:#ffffff;">
+                                            <i class="fas fa-envelope mr-3 text-lg" style="color:#cbff34;"></i>trendtrove2989@gmail.com
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="https://wa.me/923022501337" target="_blank" class="text-gray-600 hover:text-gold transition-colors flex items-center">
-                                            <i class="fab fa-whatsapp mr-3 text-lg"></i>+923022501337
+                                        <a href="https://wa.me/923022501337" target="_blank" class="footer-link" style="color:#ffffff;">
+                                            <i class="fab fa-whatsapp mr-3 text-lg" style="color:#cbff34;"></i>+923022501337
                                         </a>
                                     </li>
                                 </ul>
                             </div>
                         </div>
                         
-                        <div class="border-t border-gray-200 mt-12 pt-8 text-center text-gray-500">
-                            <p>© 2023 TrendTrove. All rights reserved.</p>
+                        <div class="border-t border-gray-800 mt-12 pt-8 text-center">
+                            <p style="color:#ffffff;">© 2026 TrendTrove. All rights reserved.</p>
                         </div>
                     </div>
                 </footer>
@@ -3955,40 +4116,10 @@
                 },
                 categoryToRemove: '',
                 currentPage: 'home',
-                
-                // --- ADDED SEARCH STATE AND LOGIC HERE ---
+                previousPage: 'home',
                 searchOpen: false,
                 searchQuery: '',
-                
-                get searchResults() {
-                    if (this.searchQuery.trim() === '') {
-                        return { products: [], categories: [] };
-                    }
-                    
-                    const q = this.searchQuery.toLowerCase();
-                    
-                    // Filter Categories
-                    const matchedCategories = this.categories.filter(c => 
-                        c.name.toLowerCase().includes(q) || 
-                        (c.description && c.description.toLowerCase().includes(q))
-                    );
-                    
-                    // Filter Products
-                    const matchedProducts = this.products.filter(p => {
-                        const catName = this.categories.find(c => c.id === p.category)?.name || '';
-                        return p.name.toLowerCase().includes(q) || 
-                               (p.description && p.description.toLowerCase().includes(q)) ||
-                               catName.toLowerCase().includes(q);
-                    });
-                    
-                    return {
-                        categories: matchedCategories,
-                        products: matchedProducts
-                    };
-                },
-                // --- END OF SEARCH LOGIC ---
-
-                previousPage: 'home',
+                searchResults: { products: [], categories: [] },
                 mobileMenuOpen: false,
                 loginModalOpen: false,
                 adminLoginModalOpen: false,
@@ -4081,7 +4212,23 @@
                         this.showToast("Error updating product: " + error.message, 'error');
                     }
                 },
-                
+                runSearch() {
+                    if (!this.searchQuery || !this.searchQuery.trim()) {
+                        this.searchResults = { products: [], categories: [] };
+                        return;
+                    }
+                    const q = this.searchQuery.toLowerCase().trim();
+                    this.searchResults = {
+                        products: this.products.filter(p => 
+                            (p.name && p.name.toLowerCase().includes(q)) ||
+                            (p.description && p.description.toLowerCase().includes(q))
+                        ),
+                        categories: this.categories.filter(c => 
+                            (c.name && c.name.toLowerCase().includes(q)) ||
+                            (c.description && c.description.toLowerCase().includes(q))
+                        )
+                    };
+                },
                 async toggleCategoryFeatured(category) {
                     try {
                         const newValue = !category.featuredOnHome;
@@ -4102,58 +4249,78 @@
                 },
                 // -------------------------------
                 // Methods for loading animation
-                startPageTransition(targetPage) {
-                    const transitionOverlay = document.querySelector('.transition-overlay');
-                    const loaderContainer = document.querySelector('.loader-container');
-                    
-                    // Store the target page
+                // Helper to update the water level based on percentage (0 to 100)
+                
+
+               
+
+                startPageTransition(targetPage, isHistoryAction = false) {
+                    // Update browser history so the back button works
+                    if (!isHistoryAction) {
+                        window.history.pushState({ page: targetPage }, '', '#' + targetPage);
+                    }
+
+                    const overlay = document.querySelector('.transition-overlay');
+                    const waterFront = document.getElementById('water-level');
+                    const waterBack = document.getElementById('water-level-back');
                     this.nextPage = targetPage;
                     
-                    // Activate transition overlay WITHOUT hiding current page
-                    transitionOverlay.classList.add('active');
+                    // 1. Instantly snap green screen to bottom and empty BOTH liquids
+                    overlay.classList.remove('closing');
+                    overlay.classList.add('sliding-up');
                     
-                    // After shutters close, show loader
+                    if(waterFront) {
+                        waterFront.style.transition = 'none';
+                        waterFront.style.transform = `translateY(500px)`;
+                    }
+                    if(waterBack) {
+                        waterBack.style.transition = 'none';
+                        waterBack.style.transform = `translateY(505px)`;
+                    }
+                    
+                    // Force browser reflow to apply instant changes
+                    void overlay.offsetWidth; 
+                    
+                    // 2. Slide the green screen UP
+                    overlay.classList.add('active');
+                    
+                    // 3. Wait for the screen to slide up (800ms), then fill BOTH liquids
                     setTimeout(() => {
-                        // Show loader
-                        loaderContainer.classList.add('active');
+                        if(waterFront) {
+                            waterFront.style.transition = 'transform 0.8s ease-in-out';
+                            waterFront.style.transform = `translateY(-50px)`;
+                        }
+                        if(waterBack) {
+                            waterBack.style.transition = 'transform 0.8s ease-in-out';
+                            waterBack.style.transform = `translateY(-45px)`;
+                        }
                         
-                        // Simulate loading time
+                        // 4. Wait for fill (800ms) + pause on black logo (1000ms)
                         setTimeout(() => {
-                            // Hide loader
-                            loaderContainer.classList.remove('active');
+                            // Hide old page, show new page
+                            document.querySelectorAll('.page-container').forEach(page => page.classList.remove('active'));
+                            this.previousPage = this.currentPage;
+                            this.currentPage = targetPage;
                             
-                            // Update current page and show target page
                             setTimeout(() => {
-                                // Hide current page first
                                 document.querySelectorAll('.page-container').forEach(page => {
-                                    page.classList.remove('active');
+                                    if (page.getAttribute('x-show') === `currentPage === '${targetPage}'`) {
+                                        page.classList.add('active');
+                                    }
                                 });
                                 
-                                // Update current page
-                                this.previousPage = this.currentPage;
-                                this.currentPage = targetPage;
-                                
-                                // Show the target page
-                                setTimeout(() => {
-                                    document.querySelectorAll('.page-container').forEach(page => {
-                                        if (page.getAttribute('x-show') === `currentPage === '${targetPage}'`) {
-                                            page.classList.add('active');
-                                        }
-                                    });
-                                    
-                                    // Start closing animation
-                                    transitionOverlay.classList.remove('active');
-                                    transitionOverlay.classList.add('closing');
-                                    
-                                    // Reset for next transition
-                                    setTimeout(() => {
-                                        transitionOverlay.classList.remove('closing');
-                                        window.scrollTo(0, 0);
-                                    }, 800);
-                                }, 50);
-                            }, 300);
-                        }, 1500); // Loading duration
-                    }, 800); // Time for shutters to close
+                                // Close any open modals/sidebars upon page transition
+                                this.cartOpen = false;
+                                this.mobileMenuOpen = false;
+                                this.searchOpen = false;
+
+                                // 5. Slide the green screen DOWN
+                                overlay.classList.remove('sliding-up', 'active');
+                                overlay.classList.add('closing');
+                                window.scrollTo(0, 0);
+                            }, 50);
+                        }, 1800); 
+                    }, 800);
                 },
                 addSize() {
                     this.newProduct.sizes.push('');
@@ -4352,7 +4519,8 @@
                     this.initializeAnimations();
                     this.simulateLoading();
                     this.initializeScrollEvents();
-                
+                    // Setup Initial History State
+                    window.history.replaceState({ page: 'home' }, '', '#home');
                     // 2. WAIT for Firebase to initialize
                     let attempts = 0;
                     while ((!window.fs || !window.db) && attempts < 50) {
@@ -4749,69 +4917,17 @@
                     fadeElements.forEach(el => fadeObserver.observe(el));
                 },
                 
-                simulateLoading() {
-                    const loadingBar = document.getElementById('loadingBar');
-                    const audio = document.getElementById('bgMusic');
-                    const icon = document.getElementById('music-icon');
-                    
-                    // Set volume to 20%
-                    if(audio) audio.volume = 0.2;
-
-                    loadingBar.style.display = 'block';
-                    loadingBar.style.opacity = '1';
-                    loadingBar.style.width = '0%';
-                    
-                    let width = 0;
-                    const interval = setInterval(() => {
-                        if (width >= 100) {
-                            clearInterval(interval);
-                            loadingBar.style.opacity = '0';
-                            setTimeout(() => { loadingBar.style.display = 'none'; }, 300);
-                        } else {
-                            width += 5;
-                            loadingBar.style.width = width + '%';
-                        }
-                    }, 50);
-
-                    // AFTER LOADING FINISHES
-                    setTimeout(() => {
-                        const transitionOverlay = document.querySelector('.transition-overlay');
-                        const loaderContainer = document.querySelector('.loader-container');
-
-                        if(loaderContainer) loaderContainer.classList.remove('active');
-
-                        if(transitionOverlay) {
-                            transitionOverlay.classList.remove('active');
-                            transitionOverlay.classList.add('closing');
-                            
-                            // --- AUTO-PLAY TRIGGER ---
-                            if(audio && audio.paused) {
-                                audio.play().then(() => {
-                                    if(icon) icon.className = "fas fa-volume-up text-white";
-                                }).catch(err => {
-                                    console.log("Autoplay blocked by browser. Music will start on user movement.");
-                                });
-                            }
-                            // -------------------------
-
-                            setTimeout(() => {
-                                transitionOverlay.classList.remove('closing');
-                            }, 800);
-                        }
-                    }, 2000); 
-                },                
+                               
                 initializeScrollEvents() {
                     // Navbar background on scroll
                     window.addEventListener('scroll', () => {
                         const navbar = document.getElementById('navbar');
-                        if (window.scrollY > 50) {
-                            // Added 'scrolled' to trigger text color change
-                            navbar.classList.add('bg-white', 'shadow-md', 'scrolled');
-                            navbar.classList.remove('bg-transparent');
+                        if (window.scrollY > 0) {
+                            // Only add the 'scrolled' class the millisecond you scroll
+                            navbar.classList.add('scrolled');
                         } else {
-                            // Removed 'scrolled' when at the top
-                            navbar.classList.remove('bg-white', 'shadow-md', 'scrolled');
-                            navbar.classList.add('bg-transparent');
+                            // Remove it when exactly at the top
+                            navbar.classList.remove('scrolled');
                         }
                     });
                 },
@@ -5077,96 +5193,18 @@
                         this.showToast('Please fill in all required fields', 'error');
                         return;
                     }
-                
+
                     const confirmButton = event ? event.currentTarget : null;
                     if (confirmButton && !confirmButton.classList.contains('animate')) {
                         confirmButton.classList.add('animate');
                         confirmButton.disabled = true;
                     }
-                
-                    // 1. Calculate the total cost & Build HTML for the Email
-                    let totalAmount = 0;
-                    let orderHtml = '<table style="width: 100%; border-collapse: collapse; font-family: sans-serif;">';
+
+                    // ... (Keep your existing price calculation & email logic here) ...
                     
-                    this.cartItems.forEach(item => {
-                        let itemPrice = item.salePrice || item.price;
-                        let qty = item.quantity || 1;
-                        totalAmount += itemPrice * qty;
-                        
-                        // Build rows for the email with Image, Name, Size, Color, and Price
-                        orderHtml += `
-                            <tr>
-                                <td style="padding: 15px 0; border-bottom: 1px solid #eaeaea; width: 80px;">
-                                    <img src="${item.frontImages[0]}" alt="${item.name}" style="width: 70px; height: 70px; object-fit: cover; border-radius: 8px;">
-                                </td>
-                                <td style="padding: 15px 10px; border-bottom: 1px solid #eaeaea;">
-                                    <h4 style="margin: 0 0 5px 0; font-size: 16px; color: #333;">${item.name}</h4>
-                                    <p style="margin: 0; color: #666; font-size: 14px;">
-                                        Size: <strong>${item.size}</strong> | Color: <strong>${item.color.name}</strong>
-                                    </p>
-                                    ${item.isCustomizable && item.customDetails ? `<p style="margin: 3px 0 0 0; font-size: 12px; color: #d4af37;">Custom Print: ${item.customDetails.printSize}</p>` : ''}
-                                </td>
-                                <td style="padding: 15px 0; border-bottom: 1px solid #eaeaea; text-align: right; font-weight: bold; color: #333;">
-                                    PKR ${itemPrice} <br><span style="font-size: 12px; color: #999; font-weight: normal;">x ${qty}</span>
-                                </td>
-                            </tr>
-                        `;
-                    });
-                    
-                    orderHtml += '</table>';
-                    totalAmount += this.shippingCost;
-                
-                    // 2. Define Database Payload
-                    const orderData = {
-                        userId: this.currentUser.id || 'guest',
-                        date: new Date().toISOString(),
-                        total: totalAmount,
-                        status: 'processing',
-                        shipping: this.checkoutForm,
-                        paymentMethod: this.paymentMethod,
-                        items: this.cartItems.map(item => ({
-                            id: item.id,
-                            name: item.name,
-                            price: item.salePrice || item.price,
-                            size: item.size,
-                            color: item.color.name,
-                            image: item.frontImages[0]
-                        }))
-                    };
-                
-                    // 3. Define EmailJS Payload (Now including order_html)
-// 3. Define EmailJS Payload (Updated to match your template)
-                    // 3. Define EmailJS Payload
-                    const emailParams = {
-                        // --- CRITICAL: Routing Variables (Fixes the "recipient empty" error) ---
-                        to_email: this.checkoutForm.email,      // Used by EmailJS to know who to send to
-                        email: this.checkoutForm.email,         // Backup in case your template uses {{email}}
-                        user_email: this.checkoutForm.email,    // Backup in case your template uses {{user_email}}
-                        
-                        // --- Customer Info ---
-                        name: this.checkoutForm.fullName,       
-                        to_name: this.checkoutForm.fullName,
-                        phone: this.checkoutForm.phone,         
-                        address: `${this.checkoutForm.address}, ${this.checkoutForm.city}, ${this.checkoutForm.province}`,
-                        
-                        // --- Product Info (Fixes the blank images/text in your screenshot) ---
-                        product_name: this.cartItems[0]?.name || '',
-                        product_image: this.cartItems[0]?.frontImages[0] || '', 
-                        size: this.cartItems[0]?.size || '',                    
-                        color: this.cartItems[0]?.color?.name || '',            
-                        
-                        // --- Pricing ---
-                        total_amount: totalAmount,
-                        shipping_cost: this.shippingCost,
-                        
-                        // --- Full HTML Backup ---
-                        order_html: orderHtml 
-                    };
-                
-                    // 4. Save to database and send emails
+                    // Inside your placeOrder promise chain:
                     window.fs.addDoc(window.fs.collection(window.db, "orders"), orderData)
                         .then((docRef) => {
-                            emailParams.order_id = docRef.id; 
                             this.userOrders.unshift({ id: docRef.id, ...orderData });
                             return Promise.all([
                                 emailjs.send('service_nunpcrh', 'template_mpjmyxw', emailParams),
@@ -5732,73 +5770,10 @@
 
     </script> 
 
-    <div onclick="toggleMusic()" style="position: fixed; bottom: 20px; left: 20px; width: 50px; height: 50px; background: #d4af37; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.4); z-index: 2147483647;">
-        <i id="music-icon" class="fas fa-volume-mute text-white" style="font-size: 20px;"></i>
-    </div>
+    
 
-    <audio id="bgMusic" loop autoplay>
-        <source src="bg-music.mp3" type="audio/mpeg">
-        Your browser does not support the audio element.
-    </audio>
 
-    <script>
-        const audio = document.getElementById('bgMusic');
-        const icon = document.getElementById('music-icon');
-        
-        // Force volume to 10%
-        audio.volume = 0.1; 
 
-        function toggleMusic() {
-            if (audio.paused) {
-                audio.play();
-                icon.className = "fas fa-volume-up text-white";
-            } else {
-                audio.pause();
-                icon.className = "fas fa-volume-mute text-white";
-            }
-        }
-
-        // The function that actually tries to play the audio
-        const startAudio = () => {
-            if (audio.paused) {
-                // Ensure volume is exactly 10% right before playing
-                audio.volume = 0.05; 
-                let playPromise = audio.play();
-                
-                if (playPromise !== undefined) {
-                    playPromise.then(() => {
-                        icon.className = "fas fa-volume-up text-white";
-                        removeListeners();
-                    }).catch(err => {
-                        console.log("Autoplay strictly blocked. Waiting for interaction.");
-                    });
-                }
-            }
-        };
-
-        // Helper to clean up events once music starts
-        function removeListeners() {
-            document.removeEventListener('click', startAudio);
-            document.removeEventListener('touchstart', startAudio);
-            document.removeEventListener('scroll', startAudio);
-            document.removeEventListener('mousemove', startAudio);
-            document.removeEventListener('keydown', startAudio);
-        }
-
-        // --- Aggressive Autoplay Attempt ---
-        // 1. Try immediately on script load
-        startAudio();
-        
-        // 2. Try when the window is fully loaded
-        window.addEventListener('load', startAudio);
-        
-        // 3. Fallback: Try on literally any interaction
-        document.addEventListener('click', startAudio);
-        document.addEventListener('touchstart', startAudio);
-        document.addEventListener('scroll', startAudio);
-        document.addEventListener('mousemove', startAudio, { once: true });
-        document.addEventListener('keydown', startAudio, { once: true });
-    </script>
 
 </body>
 </html>
