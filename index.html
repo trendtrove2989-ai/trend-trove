@@ -1886,7 +1886,7 @@
                         </div>
                     </div>
                     <div class="flex-1 flex items-center justify-center relative right-0" style="min-height:400px; width: 100%;">
-                        <model-viewer src="oversized_t-shirt_1.glb" alt="Premium Oversized T-Shirt 3D Model" auto-rotate rotation-per-second="30deg" camera-controls disable-zoom shadow-intensity="1.5" shadow-softness="1" exposure="1.2" environment-image="neutral" style="width: 100%; height: 600px; background-color: transparent; outline: none;"></model-viewer>
+                        <model-viewer src="oversized_t-shirt_1.glb" alt="Premium Oversized T-Shirt 3D Model" auto-rotate rotation-per-second="30deg" disable-zoom shadow-intensity="1.5" shadow-softness="1" exposure="1.2" environment-image="neutral" style="width: 100%; height: 600px; background-color: transparent; outline: none;"></model-viewer>
                     </div>
                 </div>
 
@@ -1924,13 +1924,12 @@
                             alt="Premium Oversized T-Shirt 3D Model"
                             auto-rotate 
                             rotation-per-second="30deg"
-                            camera-controls 
                             disable-zoom
                             shadow-intensity="1.5" 
                             shadow-softness="1"
                             exposure="1.2"
                             environment-image="neutral"
-                            style="width: 140%; height: 350px; background-color: transparent; outline: none; margin-left: -5%;"
+                            style="width: 140%; height: 350px; background-color: transparent; outline: none; margin-left: -5%; pointer-events: none;"
                         ></model-viewer>
                     </div>
 
@@ -1961,53 +1960,102 @@
         
         <!-- Starfield Script -->
         <script>
-        (function() {
-            const canvas = document.getElementById('starCanvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            let W, H, stars = [];
-        
-            function resize() {
-                W = canvas.width = canvas.offsetWidth;
-                H = canvas.height = canvas.offsetHeight;
-            }
-        
-            function initStars() {
-                stars = [];
-                for (let i = 0; i < 220; i++) {
-                    stars.push({
-                        x: Math.random() * W,
-                        y: Math.random() * H,
-                        r: Math.random() * 1.4 + 0.2,
-                        speed: Math.random() * 0.25 + 0.05,
-                        opacity: Math.random() * 0.7 + 0.2,
-                        twinkle: Math.random() * Math.PI * 2
+            (function() {
+                const waterFront = document.getElementById('water-level');
+                const waterBack = document.getElementById('water-level-back');
+                const overlay = document.querySelector('.transition-overlay');
+                
+                const allImages = document.querySelectorAll('img');
+                const totalImages = allImages.length;
+                
+                let imagesLoaded = 0;
+                let currentProgress = 0; 
+                let targetProgress = 10; 
+                let isWindowLoaded = false;
+                let isModelLoaded = false; // Tracks the 3D shirt
+    
+                function updateFluidLevel(percent) {
+                    if (!waterFront || !waterBack) return;
+                    const yPos = 500 - (percent * 5.5);
+                    waterFront.style.transform = `translateY(${yPos}px)`;
+                    waterBack.style.transform = `translateY(${yPos + 5}px)`; 
+                }
+    
+                function trackAssets() {
+                    imagesLoaded++;
+                    if (!isWindowLoaded || !isModelLoaded) {
+                        targetProgress = 10 + (imagesLoaded / totalImages) * 80; // Caps at 90%
+                    }
+                }
+    
+                if (totalImages === 0) targetProgress = 90;
+                else {
+                    allImages.forEach(img => {
+                        if (img.complete) trackAssets();
+                        else {
+                            img.addEventListener('load', trackAssets);
+                            img.addEventListener('error', trackAssets);
+                        }
                     });
                 }
-            }
-        
-            function draw() {
-                ctx.clearRect(0, 0, W, H);
-                const now = Date.now() / 1000;
-                stars.forEach(s => {
-                    s.twinkle += 0.012;
-                    const alpha = s.opacity * (0.6 + 0.4 * Math.sin(s.twinkle));
-                    ctx.beginPath();
-                    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(255,255,255,${alpha})`;
-                    ctx.fill();
-        
-                    s.y += s.speed;
-                    if (s.y > H) { s.y = 0; s.x = Math.random() * W; }
+    
+                // Track 3D Model Loading
+                const modelViewers = document.querySelectorAll('model-viewer');
+                if (modelViewers.length === 0) {
+                    isModelLoaded = true; // No models on page
+                } else {
+                    let modelsLoadedCount = 0;
+                    modelViewers.forEach(mv => {
+                        mv.addEventListener('load', () => {
+                            modelsLoadedCount++;
+                            if(modelsLoadedCount === modelViewers.length) isModelLoaded = true;
+                        });
+                        mv.addEventListener('error', () => {
+                            modelsLoadedCount++; // Prevent infinite loading if model fails
+                            if(modelsLoadedCount === modelViewers.length) isModelLoaded = true;
+                        });
+                    });
+                }
+    
+                function render() {
+                    // Push to 100% ONLY when everything is loaded
+                    if (isWindowLoaded && isModelLoaded) {
+                        targetProgress = 100;
+                    } else if (targetProgress > 90 && (!isWindowLoaded || !isModelLoaded)) {
+                        targetProgress = 90; // Stall the liquid at 90%
+                    }
+    
+                    let diff = targetProgress - currentProgress;
+                    let moveSpeed = Math.min((diff * 0.015) + 0.15, 0.4); 
+    
+                    if (currentProgress < targetProgress) {
+                        currentProgress += moveSpeed;
+                    }
+    
+                    updateFluidLevel(currentProgress);
+    
+                    if (currentProgress < 99.5) {
+                        requestAnimationFrame(render);
+                    } else {
+                        updateFluidLevel(100);
+                        // IMMEDIATE DROP (Changed from 1000ms to 50ms)
+                        setTimeout(() => {
+                            overlay.classList.add('closing');
+                            const audio = document.getElementById('bgMusic');
+                            if(audio) {
+                                audio.volume = 0.1;
+                                audio.play().catch(() => {});
+                            }
+                        }, 50); 
+                    }
+                }
+    
+                requestAnimationFrame(render);
+    
+                window.addEventListener('load', () => {
+                    isWindowLoaded = true;
                 });
-                requestAnimationFrame(draw);
-            }
-        
-            window.addEventListener('resize', () => { resize(); initStars(); });
-            resize();
-            initStars();
-            draw();
-        })();
+            })();
         </script>
 
         <div class="marquee-container">
@@ -4263,9 +4311,8 @@
                     const overlay = document.querySelector('.transition-overlay');
                     const waterFront = document.getElementById('water-level');
                     const waterBack = document.getElementById('water-level-back');
-                    this.nextPage = targetPage;
                     
-                    // 1. Instantly snap green screen to bottom and empty BOTH liquids
+                    // Instantly snap green screen to bottom
                     overlay.classList.remove('closing');
                     overlay.classList.add('sliding-up');
                     
@@ -4278,49 +4325,45 @@
                         waterBack.style.transform = `translateY(505px)`;
                     }
                     
-                    // Force browser reflow to apply instant changes
-                    void overlay.offsetWidth; 
+                    void overlay.offsetWidth; // Force browser reflow
                     
-                    // 2. Slide the green screen UP
-                    overlay.classList.add('active');
+                    overlay.classList.add('active'); // Slide UP
                     
-                    // 3. Wait for the screen to slide up (800ms), then fill BOTH liquids
+                    // Wait for screen to slide up
                     setTimeout(() => {
                         if(waterFront) {
-                            waterFront.style.transition = 'transform 0.8s ease-in-out';
+                            waterFront.style.transition = 'transform 0.6s ease-in-out';
                             waterFront.style.transform = `translateY(-50px)`;
                         }
                         if(waterBack) {
-                            waterBack.style.transition = 'transform 0.8s ease-in-out';
+                            waterBack.style.transition = 'transform 0.6s ease-in-out';
                             waterBack.style.transform = `translateY(-45px)`;
                         }
                         
-                        // 4. Wait for fill (800ms) + pause on black logo (1000ms)
+                        // Wait for liquid to fill
                         setTimeout(() => {
-                            // Hide old page, show new page
-                            document.querySelectorAll('.page-container').forEach(page => page.classList.remove('active'));
                             this.previousPage = this.currentPage;
                             this.currentPage = targetPage;
                             
-                            setTimeout(() => {
-                                document.querySelectorAll('.page-container').forEach(page => {
-                                    if (page.getAttribute('x-show') === `currentPage === '${targetPage}'`) {
-                                        page.classList.add('active');
-                                    }
-                                });
-                                
-                                // Close any open modals/sidebars upon page transition
-                                this.cartOpen = false;
-                                this.mobileMenuOpen = false;
-                                this.searchOpen = false;
+                            // FIX FOR THE BLACK SCREEN: Force display block so CSS doesn't hide it behind Alpine's back
+                            document.querySelectorAll('.page-container').forEach(page => {
+                                page.classList.remove('active');
+                                page.style.display = 'none'; 
+                                if (page.getAttribute('x-show') === `currentPage === '${targetPage}'`) {
+                                    page.style.display = 'block'; 
+                                }
+                            });
+                            
+                            this.cartOpen = false;
+                            this.mobileMenuOpen = false;
+                            this.searchOpen = false;
 
-                                // 5. Slide the green screen DOWN
-                                overlay.classList.remove('sliding-up', 'active');
-                                overlay.classList.add('closing');
-                                window.scrollTo(0, 0);
-                            }, 50);
-                        }, 1800); 
-                    }, 800);
+                            // Slide the green screen DOWN
+                            overlay.classList.remove('sliding-up', 'active');
+                            overlay.classList.add('closing');
+                            window.scrollTo(0, 0);
+                        }, 800); 
+                    }, 500);
                 },
                 addSize() {
                     this.newProduct.sizes.push('');
