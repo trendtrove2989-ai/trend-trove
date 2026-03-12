@@ -4343,16 +4343,7 @@
                         // Wait for liquid to fill
                         setTimeout(() => {
                             this.previousPage = this.currentPage;
-                            this.currentPage = targetPage;
-                            
-                            // FIX FOR THE BLACK SCREEN: Force display block so CSS doesn't hide it behind Alpine's back
-                            document.querySelectorAll('.page-container').forEach(page => {
-                                page.classList.remove('active');
-                                page.style.display = 'none'; 
-                                if (page.getAttribute('x-show') === `currentPage === '${targetPage}'`) {
-                                    page.style.display = 'block'; 
-                                }
-                            });
+                            this.currentPage = targetPage; // <-- Alpine handles the show/hide automatically via this variable!
                             
                             this.cartOpen = false;
                             this.mobileMenuOpen = false;
@@ -4560,10 +4551,21 @@
                     // 1. Initialize Animation & Loading
                     emailjs.init("cOxLQwNCTH32Cd4np");
                     this.initializeAnimations();
-                    this.simulateLoading();
-                    this.initializeScrollEvents();
+                    this.initializeScrollEvents(); // <-- Removed simulateLoading() here
+
                     // Setup Initial History State
                     window.history.replaceState({ page: 'home' }, '', '#home');
+
+                    // Listen for Browser/Mobile Back Button
+                    window.addEventListener('popstate', (event) => {
+                        if (event.state && event.state.page) {
+                            // The 'true' flag tells it NOT to push a new history state
+                            this.startPageTransition(event.state.page, true);
+                        } else {
+                            this.startPageTransition('home', true);
+                        }
+                    });
+
                     // 2. WAIT for Firebase to initialize
                     let attempts = 0;
                     while ((!window.fs || !window.db) && attempts < 50) {
