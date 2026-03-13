@@ -166,16 +166,16 @@
     } 
     
     :root {
-        --primary: #0a0a0a;
+        --primary: #000000;
         --accent: #c6ff34;
-        --background: #0d0d0d;
+        --background: #000000;
         --text-heading: #ffffff;
         --text-description: #b0b0b0;
         --text-light: #ffffff;
         --text-muted: #666666;
         --text-gold: #c6ff34;
-        --highlight: #141414;
-        --card-bg: #111111;
+        --highlight: #0a0a0a;
+        --card-bg: #050505;
         --border-light: #222222;
     }
     
@@ -225,7 +225,7 @@
         padding-top: 80px;
     }
     .bg-cream, .bg-highlight, .min-h-screen {
-        background-color: #0a0a0a !important;
+        background-color: #000000 !important;
     }
     /* ... (ALL YOUR EXISTING CSS STYLES REMAIN THE SAME) ... */
     
@@ -1584,7 +1584,7 @@
 </head>
 <body x-data="app()">
     <!-- Persistent Starfield -->
-    <canvas id="globalStarCanvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; pointer-events:none; background:#0a0a0a;"></canvas>
+    <canvas id="globalStarCanvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; pointer-events:none; background:#000000;"></canvas>
     
     <div class="transition-overlay">
         <div class="green-screen flex items-center justify-center">
@@ -1785,7 +1785,7 @@
     <!-- Home Page -->
     <div x-show="currentPage === 'home'" class="page-container active">
         <!-- Hero Section -->
-        <section class="relative w-full overflow-hidden" style="height:100vh; background:#0a0a0a; margin-top:-80px;">
+        <section class="relative w-full overflow-hidden" style="height:100vh; background:#000000; margin-top:-80px;">
         
             <!-- Animated Starfield Canvas -->
             <canvas id="starCanvas" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:0;"></canvas>
@@ -2055,7 +2055,7 @@
         </section>
         
         <!-- Collections Section -->
-        <section class="section-padding parallax-bg" id="collections" style="background-color:#0a0a0a; background-image:none;">
+        <section class="section-padding parallax-bg" id="collections" style="background-color:#000000; background-image:none;">
             <div class="container mx-auto px-6 relative z-10">
                 <div class="text-center mb-16 stagger-animation">
                     <h2 class="text-4xl md:text-5xl font-bold mb-4" style="color:#c6ff34;">Our Collections</h2>
@@ -3931,7 +3931,7 @@
                     </section> 
                 </div>   
                 <!-- Footer -->
-                <footer class="py-12" style="background:#0d0d0d; border-top: 1px solid #1a1a1a;">
+                <footer class="py-12" style="background:#000000; border-top: 1px solid #1a1a1a;">
                     <div class="container mx-auto px-6">
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                             <div>
@@ -3995,46 +3995,43 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
-<script type="module">
-    // 1. Imports (Fixed Version to 10.7.1)
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
-    // ADDED setDoc and getDoc here
-    import { 
-        getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc, query, where, setDoc, getDoc 
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { 
-        getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged 
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-    // 2. Your Firebase Configuration
-    const firebaseConfig = {
-        apiKey: "AIzaSyDGzTd_lsOENeJrAIeeU7c1nSi7qe9qFM4",
-        authDomain: "trend-trove-40382.firebaseapp.com",
-        projectId: "trend-trove-40382",
-        storageBucket: "trend-trove-40382.firebasestorage.app",
-        messagingSenderId: "410397186514",
-        appId: "1:410397186514:web:e8a8d986e21f939612100b"
-    };
-
-    // 3. Initialize Firebase
-    try {
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-
-        // 4. CRITICAL: Bind to Window so Alpine.js can see it
-        window.db = db;
-        window.auth = auth;
-        // ADDED setDoc and getDoc here as well
-        window.fs = { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, query, where, setDoc, getDoc };
-        window.fireAuth = { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged };
-
-        console.log("Firebase Initialized Successfully");
-    } catch (error) {
-        console.error("Firebase Initialization Failed:", error);
-    }
-</script> 
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+        import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc, query, where, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        
+        // --- NEW: Add Firebase Storage Imports ---
+        import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+    
+        const firebaseConfig = {
+            apiKey: "AIzaSyDGzTd_lsOENeJrAIeeU7c1nSi7qe9qFM4",
+            authDomain: "trend-trove-40382.firebaseapp.com",
+            projectId: "trend-trove-40382",
+            storageBucket: "trend-trove-40382.firebasestorage.app",
+            messagingSenderId: "410397186514",
+            appId: "1:410397186514:web:e8a8d986e21f939612100b"
+        };
+    
+        try {
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            const auth = getAuth(app);
+            const storage = getStorage(app); // Initialize Storage
+    
+            window.db = db;
+            window.auth = auth;
+            window.storage = storage; // Bind to window
+            
+            window.fs = { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, query, where, setDoc, getDoc };
+            window.fireAuth = { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged };
+            window.fireStorage = { ref, uploadString, getDownloadURL }; // Bind storage functions
+    
+            console.log("Firebase Initialized Successfully");
+        } catch (error) {
+            console.error("Firebase Initialization Failed:", error);
+        }
+    </script> 
     <script>
         function app() {
             return {
@@ -5155,66 +5152,142 @@
                     this.startPageTransition('payment');
                 },
                 
-                placeOrder(event) {
+                async placeOrder(event) {
+                    // 1. Form Validation
                     if (!this.checkoutForm.fullName || !this.checkoutForm.email || !this.checkoutForm.phone || 
                         !this.checkoutForm.province || !this.checkoutForm.district || !this.checkoutForm.city || 
                         !this.checkoutForm.address) {
                         this.showToast('Please fill in all required fields', 'error');
                         return;
                     }
-
+                
                     const confirmButton = event ? event.currentTarget : null;
                     if (confirmButton && !confirmButton.classList.contains('animate')) {
                         confirmButton.classList.add('animate');
                         confirmButton.disabled = true;
                     }
-
-                    // 1. Calculate final price & Generate Unique Order Code
-                    const itemPrice = this.selectedProduct.salePrice || this.selectedProduct.price;
-                    const finalTotal = itemPrice + this.shippingCost;
-                    
-                    // Generates a code like "TRK-849302"
+                
+                    // 2. THE FIX: Intelligently determine checkout items (Cart vs Buy Now)
+                    let itemsToCheckout = [];
+                    if (this.cartItems.length > 0) {
+                        itemsToCheckout = this.cartItems;
+                    } else {
+                        // If Cart is empty, it means they clicked "Buy Now", so we build the item from the currently selected product!
+                        itemsToCheckout = [{
+                            ...this.selectedProduct,
+                            size: this.selectedSize,
+                            color: this.selectedColor,
+                            quantity: this.quantity || 1,
+                            customDetails: this.selectedProduct.isCustomizable ? {
+                                image: this.customImage,
+                                printSize: this.selectedPrintOption ? this.selectedProduct.printOptions[this.selectedPrintOption].label : 'N/A'
+                            } : null
+                        }];
+                    }
+                
+                    // 3. Ultra-Safe Image Upload via ImgBB API
+                    try {
+                        for (let i = 0; i < itemsToCheckout.length; i++) {
+                            let item = itemsToCheckout[i];
+                            
+                            // Check if it's a custom product and the image is a raw Base64 string
+                            if (item.isCustomizable && item.customDetails && item.customDetails.image && item.customDetails.image.startsWith('data:image')) {
+                                this.showToast('Uploading custom design...', 'success');
+                                
+                                // 1. Extract just the raw Base64 data (remove the "data:image/png;base64," part)
+                                const base64Data = item.customDetails.image.split(',')[1];
+                                
+                                // 2. Prepare the data for ImgBB
+                                const formData = new FormData();
+                                formData.append('image', base64Data);
+                                
+                                // 3. Call the ImgBB API (REPLACE WITH YOUR ACTUAL API KEY)
+                                const imgbbApiKey = '0538df2f7d3e5d84e578598c180d1713'; 
+                                
+                                const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, {
+                                    method: 'POST',
+                                    body: formData
+                                });
+                                
+                                const result = await response.json();
+                                
+                                if (result.success) {
+                                    // Success! We got a clean, public URL
+                                    const publicUrl = result.data.url;
+                                    item.customDetails.image = publicUrl; 
+                                    
+                                    // Sync the main custom image state
+                                    if (this.customImage) this.customImage = publicUrl;
+                                } else {
+                                    throw new Error("ImgBB API rejected the upload.");
+                                }
+                            }
+                        }
+                    } catch (uploadError) {
+                        console.error("Image API upload failed:", uploadError);
+                        this.showToast('Failed to upload custom design image. Please try again.', 'error');
+                        if(confirmButton) { confirmButton.classList.remove('animate'); confirmButton.disabled = false; }
+                        return; // Stop the checkout so you don't get an order without the picture!
+                    }
+                
+                    // 4. Calculate Final Prices & Generate Order Code
+                    const itemsTotal = itemsToCheckout.reduce((sum, item) => sum + ((item.salePrice || item.price) * (item.quantity || 1)), 0);
+                    const finalTotal = itemsTotal + this.shippingCost;
                     const trackingCode = 'TRK-' + Math.floor(100000 + Math.random() * 900000);
-
-                    // 2. Define the order data for Firebase
+                
+                    // Save to Firebase Database
                     const orderData = {
-                        orderId: trackingCode, // SAVED TO FIREBASE
+                        orderId: trackingCode,
                         date: new Date().toISOString(),
                         status: 'processing',
                         total: finalTotal,
-                        items: this.cartItems.map(item => ({
+                        items: itemsToCheckout.map(item => ({
                             id: item.id,
                             name: item.name,
                             size: item.size,
                             color: item.color ? item.color.name : 'N/A',
                             price: item.salePrice || item.price,
-                            image: item.frontImages[0],
+                            image: (item.isCustomizable && item.customDetails && item.customDetails.image) ? item.customDetails.image : item.frontImages[0],
                             quantity: item.quantity || 1
                         })),
                         shipping: { ...this.checkoutForm },
                         paymentMethod: this.paymentMethod
                     };
-
-                    // 3. Setup Shared Variables
+                
+                    // 5. Setup Shared Email Variables
                     const orderDate = new Date().toLocaleString();
                     const paymentMethodName = this.paymentMethod === 'cod' ? 'Cash on Delivery' : (this.paymentMethod === 'card' ? 'Credit/Debit Card' : 'JazzCash/EasyPaisa');
-                    const firstItem = this.cartItems[0] || {};
-
-                    const displayImage = (firstItem.isCustomizable && firstItem.customDetails && firstItem.customDetails.image) 
+                    const firstItem = itemsToCheckout[0]; // Reliably grabbed from our fixed array
+                    const isCustom = firstItem.isCustomizable;
+                
+                    // Get Image safely
+                    const displayImage = (isCustom && firstItem.customDetails && firstItem.customDetails.image) 
                         ? firstItem.customDetails.image 
-                        : (firstItem.frontImages && firstItem.frontImages.length > 0 ? firstItem.frontImages[0] : '');
-
-                    // 4. PARAMS FOR CUSTOMER EMAIL
-                    const generatedOrderHtml = this.cartItems.map(item => {
+                        : (firstItem.frontImages && firstItem.frontImages.length > 0 ? firstItem.frontImages[0] : 'https://via.placeholder.com/250?text=No+Image');
+                
+                    // Get Size, Color, and Qty safely
+                    const itemSize = firstItem.size || 'N/A';
+                    const itemColor = typeof firstItem.color === 'object' ? firstItem.color.name : (firstItem.color || 'N/A');
+                    const itemQty = firstItem.quantity || 1;
+                
+                    // Apply specific Logic for Admin Emails
+                    const adminSize = isCustom ? 'N/A' : itemSize;
+                    const adminColor = isCustom ? 'N/A' : itemColor;
+                    const printingSize = (isCustom && firstItem.customDetails && firstItem.customDetails.printSize) ? firstItem.customDetails.printSize : 'N/A';
+                
+                    // 6. PARAMS FOR BUYER EMAIL
+                    const generatedOrderHtml = itemsToCheckout.map(item => {
                         const regularPrice = item.price || 0;
                         const salePrice = item.salePrice || item.price || 0;
-                        const imgUrl = (item.isCustomizable && item.customDetails && item.customDetails.image) ? item.customDetails.image : (item.frontImages && item.frontImages.length > 0 ? item.frontImages[0] : '');
+                        const imgUrl = (item.isCustomizable && item.customDetails && item.customDetails.image) 
+                            ? item.customDetails.image 
+                            : (item.frontImages && item.frontImages.length > 0 ? item.frontImages[0] : '');
                         const colorName = item.color ? item.color.name : 'N/A';
                         
                         let priceHtml = salePrice < regularPrice 
                             ? `<span style="text-decoration: line-through; color: #999; font-size: 12px;">PKR ${regularPrice}</span><br><strong style="color: #d4af37;">PKR ${salePrice}</strong>`
                             : `<strong style="color: #d4af37;">PKR ${regularPrice}</strong>`;
-
+                
                         return `
                         <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
                             <tr>
@@ -5234,52 +5307,55 @@
                         </table>
                         `;
                     }).join('');
-
+                
                     const customerEmailParams = {
-                        order_id: trackingCode, // <--- ADDED FOR EMAILJS
+                        order_id: trackingCode,
                         name: this.checkoutForm.fullName,
                         to_email: this.checkoutForm.email, 
                         phone: this.checkoutForm.phone,
                         address: `${this.checkoutForm.address}, ${this.checkoutForm.city}, ${this.checkoutForm.district}, ${this.checkoutForm.province}`,
                         shipping_cost: this.shippingCost,
                         total_amount: finalTotal,
-                        order_html: generatedOrderHtml
+                        payment_method: paymentMethodName,
+                        order_date: orderDate,
+                        
+                        product_name: firstItem.name,
+                        product_size: itemSize,         // Actual size
+                        product_color: itemColor,       // Actual color
+                        product_qty: itemQty,
+                        product_price: firstItem.salePrice || firstItem.price,
+                        product_image: displayImage,
+                        order_html: generatedOrderHtml  // Fallback map just in case
                     };
-
-                    // 5. PARAMS FOR ADMIN EMAIL
+                
+                    // 7. PARAMS FOR ADMIN EMAIL
                     const adminEmailParams = {
-                        order_id: trackingCode, // <--- ADDED FOR EMAILJS
+                        order_id: trackingCode,
                         customer_name: this.checkoutForm.fullName,
                         customer_email: this.checkoutForm.email,
                         customer_phone: this.checkoutForm.phone,
-                        customer_address: this.checkoutForm.address,
-                        customer_city: this.checkoutForm.city,
-                        customer_district: this.checkoutForm.district,
-                        customer_province: this.checkoutForm.province,
-                        
+                        customer_address: `${this.checkoutForm.address}, ${this.checkoutForm.city}, ${this.checkoutForm.district}, ${this.checkoutForm.province}`,
                         order_date: orderDate,
                         payment_method: paymentMethodName,
                         total_amount: finalTotal,
                         
-                        product_name: firstItem.name || 'Custom Product',
-                        product_size: firstItem.size || 'N/A',
-                        product_color: firstItem.color ? firstItem.color.name : 'N/A',
+                        product_name: firstItem.name,
+                        product_size: adminSize,     // Uses N/A for custom products
+                        product_color: adminColor,   // Uses N/A for custom products
+                        print_size: printingSize,    // Actual Print size!
+                        product_qty: itemQty,
                         product_price: firstItem.price || 0,
                         product_sale_price: firstItem.salePrice || firstItem.price || 0,
-                        product_image: displayImage
+                        product_image: displayImage  // Passes the custom URL uploaded to Firebase
                     };
-                    
-                    // 6. Send to Firebase and EmailJS
-                    // 6. Send to Firebase and EmailJS
+                
+                    // 8. Send to Firebase and EmailJS
                     window.fs.addDoc(window.fs.collection(window.db, "orders"), orderData)
                         .then((docRef) => {
                             this.userOrders.unshift({ id: docRef.id, ...orderData });
                             
                             return Promise.all([
-                                // BUYER EMAIL (template_rd52ctb uses customerEmailParams)
                                 emailjs.send('service_nunpcrh', 'template_rd52ctb', customerEmailParams).catch(err => console.warn('Customer Email failed', err)),
-                                
-                                // ADMIN EMAIL (template_mpjmyxw uses adminEmailParams)
                                 emailjs.send('service_nunpcrh', 'template_mpjmyxw', adminEmailParams).catch(err => console.warn('Admin Email failed', err))
                             ]);
                         })
