@@ -116,30 +116,50 @@
         }
     }
 /* --- CUSTOM MOCKUP BUILDER STYLES --- */
+    /* --- FIXED MOCKUP BUILDER STYLES --- */
     .mockup-container { 
         position: relative; 
         width: 100%; 
-        max-width: 500px; 
+        max-width: 450px; 
+        aspect-ratio: 1 / 1.2;
         margin: 0 auto; 
-        border-radius: 8px; 
-        overflow: hidden; 
-        background-color: #ffffff; /* Base color changes via JS */
-        transition: background-color 0.3s ease;
+        border-radius: 12px; 
+        overflow: hidden; /* This prevents the "full screen" image issue */
+        background-color: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
-    /* mix-blend-mode: multiply allows the white shirt to take on the background color while keeping shadows! */
-
+    
+    #shirtColorCanvas {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        z-index: 2;
+    }
+    
+    .print-area { 
+        position: absolute; 
+        z-index: 20; 
+        border: 1px dashed rgba(198, 255, 52, 0.4); 
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none; /* Let's dragging happen on the inner div */
+    }
+    
+    /* Specific Printing Positions */
+    .print-pos-a4 { top: 22%; left: 25%; width: 50%; height: 50%; }
+    .print-pos-a3 { top: 15%; left: 15%; width: 70%; height: 65%; }
+    .print-pos-pocket { top: 22%; left: 58%; width: 18%; height: 18%; }
+    .print-pos-sleeve { top: 35%; left: 78%; width: 15%; height: 15%; }
     
     .mockup-design { 
-        position: absolute; 
-        z-index: 3; 
-        object-fit: contain; 
-        pointer-events: none; 
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        pointer-events: none; /* Important so it doesn't block the drag handle */
     }
-    /* Printing Positions based on your reference image */
-    .print-pos-a4 { top: 25%; left: 30%; width: 40%; height: 45%; }
-    .print-pos-a3 { top: 20%; left: 20%; width: 60%; height: 55%; }
-    .print-pos-pocket { top: 28%; left: 58%; width: 12%; height: 15%; }
-    .print-pos-sleeve { top: 32%; left: 82%; width: 12%; height: 15%; }
     /* Rest of your existing CSS styles */
     .hero-height img {
          filter: brightness(100%);
@@ -1610,94 +1630,7 @@
     <div class="transition-overlay">
         </div>
 
-    <script>
-        (function() {
-            const waterFront = document.getElementById('water-level');
-            const waterBack = document.getElementById('water-level-back');
-            const overlay = document.querySelector('.transition-overlay');
-            
-            const allImages = document.querySelectorAll('img');
-            const totalImages = allImages.length;
-            
-            let imagesLoaded = 0;
-            let currentProgress = 0; 
-            let targetProgress = 10; // Initial splash
-            let isPageFullyLoaded = false;
     
-            function updateFluidLevel(percent) {
-                if (!waterFront || !waterBack) return;
-                // Changed multiplier from 5.5 to 5 so 100% equals exactly 0px
-                const yPos = 500 - (percent * 5); 
-                
-                waterFront.style.transform = `translateY(${yPos}px)`;
-                waterBack.style.transform = `translateY(${yPos + 5}px)`; 
-            }
-    
-            function trackAssets() {
-                imagesLoaded++;
-                if (!isPageFullyLoaded) {
-                    targetProgress = 10 + (imagesLoaded / totalImages) * 80;
-                }
-            }
-    
-            if (totalImages === 0) {
-                targetProgress = 90;
-            } else {
-                allImages.forEach(img => {
-                    if (img.complete) trackAssets();
-                    else {
-                        img.addEventListener('load', trackAssets);
-                        img.addEventListener('error', trackAssets);
-                    }
-                });
-            }
-    
-            function render() {
-                // Once the browser finishes loading, set our ultimate goal to 100
-                if (isPageFullyLoaded) {
-                    targetProgress = 100;
-                }
-    
-                let diff = targetProgress - currentProgress;
-                
-                // THE FIX: Enforce a slow, smooth crawl. 
-                // We cap the maximum speed (0.4) so it NEVER snaps instantly, 
-                // and keep a minimum speed (0.15) so it never stalls.
-                let moveSpeed = Math.min((diff * 0.015) + 0.15, 0.4); 
-    
-                if (currentProgress < targetProgress) {
-                    currentProgress += moveSpeed;
-                }
-    
-                updateFluidLevel(currentProgress);
-    
-                // Wait until it visually hits 99.5%
-                if (currentProgress < 99.5) {
-                    requestAnimationFrame(render);
-                } else {
-                    // Hard finish to 100% to ensure the logo is fully black
-                    updateFluidLevel(100);
-                    
-                    // Exactly 1 second delay AFTER it fills, then slide down
-                    setTimeout(() => {
-                        overlay.classList.add('closing');
-                        const audio = document.getElementById('bgMusic');
-                        if(audio) {
-                            audio.volume = 0.1;
-                            audio.play().catch(() => {});
-                        }
-                    }, 1000);
-                }
-            }
-    
-            // Start animation
-            requestAnimationFrame(render);
-    
-            window.addEventListener('load', () => {
-                isPageFullyLoaded = true;
-            });
-        })();
-    </script>
 
     <!-- Loading Bar -->
     <div class="loading-bar" id="loadingBar"></div>
@@ -1969,25 +1902,25 @@
                 let imagesLoaded = 0;
                 let currentProgress = 0; 
                 let targetProgress = 10; 
-                let isWindowLoaded = false;
-                let isModelLoaded = false; // Tracks the 3D shirt
-    
+                let isPageFullyLoaded = false;
+            
                 function updateFluidLevel(percent) {
                     if (!waterFront || !waterBack) return;
-                    const yPos = 500 - (percent * 5.5);
+                    const yPos = 500 - (percent * 5); 
                     waterFront.style.transform = `translateY(${yPos}px)`;
                     waterBack.style.transform = `translateY(${yPos + 5}px)`; 
                 }
-    
+            
                 function trackAssets() {
                     imagesLoaded++;
-                    if (!isWindowLoaded || !isModelLoaded) {
-                        targetProgress = 10 + (imagesLoaded / totalImages) * 80; // Caps at 90%
+                    if (!isPageFullyLoaded) {
+                        targetProgress = 10 + (imagesLoaded / totalImages) * 80;
                     }
                 }
-    
-                if (totalImages === 0) targetProgress = 90;
-                else {
+            
+                if (totalImages === 0) {
+                    targetProgress = 90;
+                } else {
                     allImages.forEach(img => {
                         if (img.complete) trackAssets();
                         else {
@@ -1996,62 +1929,43 @@
                         }
                     });
                 }
-    
-                // Track 3D Model Loading
-                const modelViewers = document.querySelectorAll('model-viewer');
-                if (modelViewers.length === 0) {
-                    isModelLoaded = true; // No models on page
-                } else {
-                    let modelsLoadedCount = 0;
-                    modelViewers.forEach(mv => {
-                        mv.addEventListener('load', () => {
-                            modelsLoadedCount++;
-                            if(modelsLoadedCount === modelViewers.length) isModelLoaded = true;
-                        });
-                        mv.addEventListener('error', () => {
-                            modelsLoadedCount++; // Prevent infinite loading if model fails
-                            if(modelsLoadedCount === modelViewers.length) isModelLoaded = true;
-                        });
-                    });
-                }
-    
+            
                 function render() {
-                    // Push to 100% ONLY when everything is loaded
-                    if (isWindowLoaded && isModelLoaded) {
+                    if (isPageFullyLoaded) {
                         targetProgress = 100;
-                    } else if (targetProgress > 90 && (!isWindowLoaded || !isModelLoaded)) {
-                        targetProgress = 90; // Stall the liquid at 90%
                     }
-    
+            
                     let diff = targetProgress - currentProgress;
+                    
+                    // KEEPING YOUR ORIGINAL SPEED (0.4 cap)
                     let moveSpeed = Math.min((diff * 0.015) + 0.15, 0.4); 
-    
+            
                     if (currentProgress < targetProgress) {
                         currentProgress += moveSpeed;
                     }
-    
+            
                     updateFluidLevel(currentProgress);
-    
+            
                     if (currentProgress < 99.5) {
                         requestAnimationFrame(render);
                     } else {
+                        // LOGO IS FULL - SHUTTER CLOSES IMMEDIATELY
                         updateFluidLevel(100);
-                        // IMMEDIATE DROP (Changed from 1000ms to 50ms)
-                        setTimeout(() => {
-                            overlay.classList.add('closing');
-                            const audio = document.getElementById('bgMusic');
-                            if(audio) {
-                                audio.volume = 0.1;
-                                audio.play().catch(() => {});
-                            }
-                        }, 50); 
+                        
+                        overlay.classList.add('closing'); // Removed the 1000ms delay
+                        
+                        const audio = document.getElementById('bgMusic');
+                        if(audio) {
+                            audio.volume = 0.1;
+                            audio.play().catch(() => {});
+                        }
                     }
                 }
-    
+            
                 requestAnimationFrame(render);
-    
+            
                 window.addEventListener('load', () => {
-                    isWindowLoaded = true;
+                    isPageFullyLoaded = true;
                 });
             })();
         </script>
@@ -2168,7 +2082,7 @@
                 <div x-show="categories.length > 2" class="text-center mt-12">
                     <button @click="showAllCollectionsPage()" class="bg-white text-black font-bold tracking-wider text-lg px-8 py-4 rounded transition-colors hover:bg-[#cbff34]">VIEW ALL COLLECTIONS</button>
                 </div>
-            </div>zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
+            </div>
         </section>        
         <!-- Testimonials -->
         <section class="section-padding bg-cream">
@@ -4908,9 +4822,15 @@
                     }
                 },
                 getPrintPositionClass() {
-                    if (!this.selectedPrintOption) return 'hidden';
-                    const map = { 'a4': 'print-pos-a4', 'a3': 'print-pos-a3', 'pocket': 'print-pos-pocket', 'sleeve': 'print-pos-sleeve' };
-                    return map[this.selectedPrintOption];
+                    if (!this.selectedPrintOption) return '';
+                    // This ensures the class applied to the HTML exactly matches the CSS defined in Step 1
+                    const map = { 
+                        'a4': 'print-pos-a4', 
+                        'a3': 'print-pos-a3', 
+                        'pocket': 'print-pos-pocket', 
+                        'sleeve': 'print-pos-sleeve' 
+                    };
+                    return map[this.selectedPrintOption] || '';
                 },
                 // Update showProductDetail to reset custom fields
                 showProductDetail(product) {
@@ -5249,15 +5169,118 @@
                         confirmButton.disabled = true;
                     }
 
-                    // ... (Keep your existing price calculation & email logic here) ...
+                    // 1. Calculate final price & Generate Unique Order Code
+                    const itemPrice = this.selectedProduct.salePrice || this.selectedProduct.price;
+                    const finalTotal = itemPrice + this.shippingCost;
                     
-                    // Inside your placeOrder promise chain:
+                    // Generates a code like "TRK-849302"
+                    const trackingCode = 'TRK-' + Math.floor(100000 + Math.random() * 900000);
+
+                    // 2. Define the order data for Firebase
+                    const orderData = {
+                        orderId: trackingCode, // SAVED TO FIREBASE
+                        date: new Date().toISOString(),
+                        status: 'processing',
+                        total: finalTotal,
+                        items: this.cartItems.map(item => ({
+                            id: item.id,
+                            name: item.name,
+                            size: item.size,
+                            color: item.color ? item.color.name : 'N/A',
+                            price: item.salePrice || item.price,
+                            image: item.frontImages[0],
+                            quantity: item.quantity || 1
+                        })),
+                        shipping: { ...this.checkoutForm },
+                        paymentMethod: this.paymentMethod
+                    };
+
+                    // 3. Setup Shared Variables
+                    const orderDate = new Date().toLocaleString();
+                    const paymentMethodName = this.paymentMethod === 'cod' ? 'Cash on Delivery' : (this.paymentMethod === 'card' ? 'Credit/Debit Card' : 'JazzCash/EasyPaisa');
+                    const firstItem = this.cartItems[0] || {};
+
+                    const displayImage = (firstItem.isCustomizable && firstItem.customDetails && firstItem.customDetails.image) 
+                        ? firstItem.customDetails.image 
+                        : (firstItem.frontImages && firstItem.frontImages.length > 0 ? firstItem.frontImages[0] : '');
+
+                    // 4. PARAMS FOR CUSTOMER EMAIL
+                    const generatedOrderHtml = this.cartItems.map(item => {
+                        const regularPrice = item.price || 0;
+                        const salePrice = item.salePrice || item.price || 0;
+                        const imgUrl = (item.isCustomizable && item.customDetails && item.customDetails.image) ? item.customDetails.image : (item.frontImages && item.frontImages.length > 0 ? item.frontImages[0] : '');
+                        const colorName = item.color ? item.color.name : 'N/A';
+                        
+                        let priceHtml = salePrice < regularPrice 
+                            ? `<span style="text-decoration: line-through; color: #999; font-size: 12px;">PKR ${regularPrice}</span><br><strong style="color: #d4af37;">PKR ${salePrice}</strong>`
+                            : `<strong style="color: #d4af37;">PKR ${regularPrice}</strong>`;
+
+                        return `
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
+                            <tr>
+                                <td style="padding: 10px; border-bottom: 1px solid #eee; width: 70px;">
+                                    <img src="${imgUrl}" alt="${item.name}" style="width: 60px; height: 60px; border-radius: 5px; object-fit: cover; background-color: #f4f4f4;"/>
+                                </td>
+                                <td style="padding: 10px; border-bottom: 1px solid #eee; vertical-align: top;">
+                                    <strong style="font-size: 15px; color: #1a1a1a;">${item.name}</strong><br>
+                                    <span style="font-size: 13px; color: #666;">Size: <strong>${item.size}</strong> | Color: <strong>${colorName}</strong></span><br>
+                                    <span style="font-size: 12px; color: #888;">Method: ${paymentMethodName} | Date: ${orderDate}</span>
+                                </td>
+                                <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right; vertical-align: top;">
+                                    <span style="font-size: 13px; color: #555;">Qty: ${item.quantity || 1}</span><br>
+                                    ${priceHtml}
+                                </td>
+                            </tr>
+                        </table>
+                        `;
+                    }).join('');
+
+                    const customerEmailParams = {
+                        order_id: trackingCode, // <--- ADDED FOR EMAILJS
+                        name: this.checkoutForm.fullName,
+                        to_email: this.checkoutForm.email, 
+                        phone: this.checkoutForm.phone,
+                        address: `${this.checkoutForm.address}, ${this.checkoutForm.city}, ${this.checkoutForm.district}, ${this.checkoutForm.province}`,
+                        shipping_cost: this.shippingCost,
+                        total_amount: finalTotal,
+                        order_html: generatedOrderHtml
+                    };
+
+                    // 5. PARAMS FOR ADMIN EMAIL
+                    const adminEmailParams = {
+                        order_id: trackingCode, // <--- ADDED FOR EMAILJS
+                        customer_name: this.checkoutForm.fullName,
+                        customer_email: this.checkoutForm.email,
+                        customer_phone: this.checkoutForm.phone,
+                        customer_address: this.checkoutForm.address,
+                        customer_city: this.checkoutForm.city,
+                        customer_district: this.checkoutForm.district,
+                        customer_province: this.checkoutForm.province,
+                        
+                        order_date: orderDate,
+                        payment_method: paymentMethodName,
+                        total_amount: finalTotal,
+                        
+                        product_name: firstItem.name || 'Custom Product',
+                        product_size: firstItem.size || 'N/A',
+                        product_color: firstItem.color ? firstItem.color.name : 'N/A',
+                        product_price: firstItem.price || 0,
+                        product_sale_price: firstItem.salePrice || firstItem.price || 0,
+                        product_image: displayImage
+                    };
+                    
+                    // 6. Send to Firebase and EmailJS
+                    // 6. Send to Firebase and EmailJS
                     window.fs.addDoc(window.fs.collection(window.db, "orders"), orderData)
                         .then((docRef) => {
                             this.userOrders.unshift({ id: docRef.id, ...orderData });
+                            
                             return Promise.all([
-                                emailjs.send('service_nunpcrh', 'template_mpjmyxw', emailParams),
-                                emailjs.send('service_nunpcrh', 'template_rd52ctb', emailParams)
+                                // BUYER EMAIL (template_rd52ctb uses customerEmailParams)
+                                emailjs.send('service_nunpcrh', 'template_rd52ctb', customerEmailParams).catch(err => console.warn('Customer Email failed', err)),
+                                
+                                // ADMIN EMAIL (template_mpjmyxw uses adminEmailParams)
+                                emailjs.send('service_nunpcrh', 'template_mpjmyxw', adminEmailParams).catch(err => console.warn('Admin Email failed', err))
                             ]);
                         })
                         .then(() => {
@@ -5267,6 +5290,7 @@
                             if (this.isLoggedIn && this.currentUser && this.currentUser.id) {
                                 localStorage.setItem(`trendtrove_cart_${this.currentUser.id}`, JSON.stringify([]));
                             }
+                            
                             setTimeout(() => {
                                 this.startPageTransition('order-confirmation');
                             }, 7500); 
